@@ -1,9 +1,13 @@
-from typing import IO, BinaryIO
+from typing import IO, BinaryIO, Any
 from source.ganim_format import *
 from source.file_io import AnimFileIO
-from struct import unpack, calcsize
+from struct import pack, unpack, calcsize
+
+ENCODING = "utf-8"
+BUILD_STRING = "BILD"
 
 class GriftAnimIO(AnimFileIO):
+    ### Some general methods for I/O
     @staticmethod
     def read(file: BinaryIO, fmt: str):
         size = calcsize(fmt)
@@ -34,7 +38,45 @@ class GriftAnimIO(AnimFileIO):
         for _ in range(size):
             output += GriftAnimIO.read(file, "s")
 
-        return output.decode("utf-8")
+        return output.decode(ENCODING)
+
+    @staticmethod
+    def read_hashed_string(file: BinaryIO) -> HashedString:
+        result = HashedString()
+        result.hash_val = GriftAnimIO.read_int(file)
+        result.original = GriftAnimIO.read_str(file)
+        return result
+
+    @staticmethod
+    def write(file: BinaryIO, fmt: str, obj: Any) -> None:
+        bin = pack(fmt, obj)
+        file.write(bin)
+
+    @staticmethod
+    def write_int(file: BinaryIO, val: int) -> None:
+        GriftAnimIO.write(file, "I", val)
+
+    @staticmethod
+    def write_bool(file: BinaryIO, val: bool) -> None:
+        GriftAnimIO.write_int(file, 1 if val else 0)
+
+    @staticmethod
+    def write_float(file: BinaryIO, val: float) -> None:
+        GriftAnimIO.write(file, "f", val)
+
+    @staticmethod
+    def write_string(file: BinaryIO, val: str, include_size = True) -> None:
+        if include_size:
+            GriftAnimIO.write_int(file, len(val))
+        for b in val:
+            GriftAnimIO.write(file, "s", bytes(b, ENCODING))
+
+    @staticmethod
+    def write_hashed_string(file: BinaryIO, val: HashedString) -> None:
+        GriftAnimIO.write_int(file, val.hash_val)
+        GriftAnimIO.write_string(file, val.original)
+
+    ### Methods for reading the build file
 
     @staticmethod
     def read_build_frame(file: BinaryIO) -> BuildFrame:
@@ -64,16 +106,9 @@ class GriftAnimIO(AnimFileIO):
         return result
 
     @staticmethod
-    def read_hashed_string(file: BinaryIO) -> HashedString:
-        result = HashedString()
-        result.hash_val = GriftAnimIO.read_int(file)
-        result.original = GriftAnimIO.read_str(file)
-        return result
-
-    @staticmethod
     def read_build_file(file: BinaryIO) -> BuildFile:
-        header = file.read(4).decode("utf-8")
-        if header != 'BILD':
+        header = file.read(len(BUILD_STRING)).decode("utf-8")
+        if header != BUILD_STRING:
             raise Exception("Header must be BILD")
         result = BuildFile()
         result.version = GriftAnimIO.read_int(file)
@@ -92,3 +127,47 @@ class GriftAnimIO(AnimFileIO):
         for _ in range(num_hashed_strings):
             result.hashed_strings.append(GriftAnimIO.read_hashed_string(file))
         return result
+
+    ### Methods for writing the build file
+
+    @staticmethod
+    def write_build_frame(file: BinaryIO, frame: BuildFrame) -> None:
+        GriftAnimIO.write_int(file, frame.frame_num)
+        GriftAnimIO.write_int(file, frame.duration)
+        GriftAnimIO.write_int(file, frame.image_index)
+        GriftAnimIO.write_float(file, frame.bbox.pos.x)
+        GriftAnimIO.write_float(file, frame.bbox.pos.y)
+        GriftAnimIO.write_float(file, frame.bbox.size.x)
+        GriftAnimIO.write_float(file, frame.bbox.size.y)
+        GriftAnimIO.write_float(file, frame.uv0.x)
+        GriftAnimIO.write_float(file, frame.uv0.y)
+        GriftAnimIO.write_float(file, frame.uv1.x)
+        GriftAnimIO.write_float(file, frame.uv1.y)
+
+    @staticmethod
+    def write_build_symbol(file: BinaryIO, symbol: BuildSymbol) -> None:
+        GriftAnimIO.write_int(file, symbol.symbol_hash)
+        GriftAnimIO.write_int(file, symbol.color_channel_hash)
+        GriftAnimIO.write_bool(file, symbol.looping)
+        GriftAnimIO.write_int(file, len(symbol.frames))
+        for frame in symbol.frames:
+            GriftAnimIO.write_build_frame(file, frame)
+
+    @staticmethod
+    def write_build_file(file: BinaryIO, build: BuildFile) -> None:
+        GriftAnimIO.write_string(file, BUILD_STRING, False)
+        GriftAnimIO.write_int(file, build.version)
+        GriftAnimIO.write_int(file, len(build.symbols))
+        GriftAnimIO.write_int(file, build.total_frames)
+        GriftAnimIO.write_string(file, build.build_name)
+        GriftAnimIO.write_int(file, len(build.materials))
+        for material in build.materials:
+            GriftAnimIO.write_string(file, material)
+        GriftAnimIO.write_int(file, len(build.sdf_materials))
+        for material in build.sdf_materials:
+            GriftAnimIO.write_string(file, material)
+        for symbol in build.symbols:
+            GriftAnimIO.write_build_symbol(file, symbol)
+        GriftAnimIO.write_int(file, len(build.hashed_strings))
+        for string in build.hashed_strings:
+            GriftAnimIO.write_hashed_string(file, string)
