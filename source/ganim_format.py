@@ -1,6 +1,9 @@
 BUILD_VERSION = 10
 ANIM_VERSION = 10
 
+def to_hex(int_val: int) -> str:
+    return "0x{0:08X}".format(int_val)
+
 class Coord:
     def __init__(self, x = 0.0, y = 0.0) -> None:
         self.x = x
@@ -29,7 +32,7 @@ class HashedString:
         self.original = original
 
     def __str__(self) -> str:
-        return f"'{self.original}'[{self.hash_val}]"
+        return f"'{self.original}'[{to_hex(self.hash_val)}]"
 
     def __repr__(self) -> str:
         return str(self)
@@ -58,6 +61,12 @@ class BuildSymbol:
         self.color_channel_hash = color_channel_hash
         self.looping = looping
         self.frames = frames or []
+
+    def __str__(self) -> str:
+        return f"Symbol {to_hex(self.symbol_hash)} ({len(self.frames)} frames)"
+
+    def __repr__(self) -> str:
+        return str(self)
 
 class BuildFile:
     def __init__(self, version = 0, total_frames = 0, build_name = "", materials: list[str] | None = None, sdf_materials: list[str] | None = None, symbols: list[BuildSymbol] | None = None, hashed_strings: list[HashedString] | None = None) -> None:
