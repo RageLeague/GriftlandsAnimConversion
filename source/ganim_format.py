@@ -1,5 +1,5 @@
 BUILD_VERSION = 10
-ANIM_VERSION = 10
+ANIM_VERSION = 7
 
 def to_hex(int_val: int) -> str:
     return "0x{0:08X}".format(int_val)
@@ -69,7 +69,7 @@ class BuildSymbol:
         return str(self)
 
 class BuildFile:
-    def __init__(self, version = 0, total_frames = 0, build_name = "", materials: list[str] | None = None, sdf_materials: list[str] | None = None, symbols: list[BuildSymbol] | None = None, hashed_strings: list[HashedString] | None = None) -> None:
+    def __init__(self, version = BUILD_VERSION, total_frames = 0, build_name = "", materials: list[str] | None = None, sdf_materials: list[str] | None = None, symbols: list[BuildSymbol] | None = None, hashed_strings: list[HashedString] | None = None) -> None:
         self.version = version
         self.total_frames = total_frames
         self.build_name = build_name
