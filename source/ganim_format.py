@@ -75,3 +75,44 @@ class BuildFile:
 
     def __repr__(self) -> str:
         return str(self)
+
+@dataclass
+class AnimElement:
+    symbol_hash: int = 0
+    frame: int = 0
+    folder_hash: int = 0
+    mat_a: float = 0.0
+    mat_b: float = 0.0
+    mat_c: float = 0.0
+    mat_d: float = 0.0
+    tx: float = 0.0
+    ty: float = 0.0
+    tz: float = 0.0
+
+    def __str__(self) -> str:
+        return f"AnimSymbol {to_hex(self.symbol_hash)} (frame {len(self.frame)})"
+
+    def __repr__(self) -> str:
+        return str(self)
+
+@dataclass
+class AnimFrame:
+    pos: Coord = field(default_factory=Coord)
+    size: Coord = field(default_factory=Coord)
+    elements: list[AnimElement] = field(default_factory=list)
+
+@dataclass
+class AnimData:
+    anim_name: str = ""
+    root_symbol: str = ""
+    frame_rate: float = 0.0
+    looping: bool = False
+    frames: list[AnimFrame] = field(default_factory=list)
+
+@dataclass
+class AnimFile:
+    version: int = ANIM_VERSION
+    num_element_refs: int = 0
+    num_frames: int = 0
+    anims: list[AnimData] = field(default_factory=list)
+    hashed_strings: list[HashedString] = field(default_factory=list)
