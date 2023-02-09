@@ -81,6 +81,20 @@ class AnimElement:
     symbol_hash: int = 0
     frame: int = 0
     folder_hash: int = 0
+
+    # Color modifier of element. Multiplicative. Ranges from [0.0, 1.0]. Note the reverse order
+    c_ap: float = 0.0
+    c_bp: float = 0.0
+    c_gp: float = 0.0
+    c_rp: float = 0.0
+
+    # Color modifier of element. Additive. Ranges from [0.0, 1.0]. Note the reverse order
+    c_aa: float = 0.0
+    c_ba: float = 0.0
+    c_ga: float = 0.0
+    c_ra: float = 0.0
+
+    # Something about matrix
     mat_a: float = 0.0
     mat_b: float = 0.0
     mat_c: float = 0.0
@@ -90,7 +104,7 @@ class AnimElement:
     tz: float = 0.0
 
     def __str__(self) -> str:
-        return f"AnimSymbol {to_hex(self.symbol_hash)} (frame {len(self.frame)})"
+        return f"AnimElement {to_hex(self.symbol_hash)} (frame {self.frame})"
 
     def __repr__(self) -> str:
         return str(self)
