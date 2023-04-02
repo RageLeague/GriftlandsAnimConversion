@@ -1,7 +1,8 @@
-from typing import IO, BinaryIO, Any
+from typing import BinaryIO, Any
 from source.ganim_format import *
 from source.file_io import AnimFileIO, WrongFormatException
 from struct import pack, unpack, calcsize
+import os
 
 ENCODING = "utf-8"
 BUILD_STRING = "BILD"
@@ -309,3 +310,16 @@ class GriftAnimIO(AnimFileIO):
         GriftAnimIO.write_int(file, len(anim.hashed_strings))
         for string in anim.hashed_strings:
             GriftAnimIO.write_hashed_string(file, string)
+
+    @staticmethod
+    def read_animation(animation_folder: str) -> Animation:
+        with open(os.path.join(animation_folder, "build.bin"), "rb") as build_file, open(os.path.join(animation_folder, "anim.bin"), "rb") as anim_file:
+            build = GriftAnimIO.read_build_file(build_file)
+            anim = GriftAnimIO.read_anim_file(anim_file)
+            return Animation(build, anim)
+
+    @staticmethod
+    def write_animation(animation_folder: str, animation: Animation) -> None:
+        with open(os.path.join(animation_folder, "build.bin"), "wb") as build_file, open(os.path.join(animation_folder, "anim.bin"), "wb") as anim_file:
+            GriftAnimIO.write_build_file(build_file, animation.build)
+            GriftAnimIO.write_anim_file(anim_file, animation.anim)

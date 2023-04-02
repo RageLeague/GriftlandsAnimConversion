@@ -10,33 +10,15 @@ class Coord:
     x: float = 0.0
     y: float = 0.0
 
-    def __str__(self) -> str:
-        return f"({self.x}, {self.y})"
-
-    def __repr__(self) -> str:
-        return str(self)
-
 @dataclass
 class BBox:
     pos: Coord = field(default_factory=Coord)
     size: Coord = field(default_factory=Coord)
 
-    def __str__(self) -> str:
-        return f"[pos={self.pos}, size={self.size}]"
-
-    def __repr__(self) -> str:
-        return str(self)
-
 @dataclass
 class HashedString:
     hash_val: int = 0
     original: str = ""
-
-    def __str__(self) -> str:
-        return f"'{self.original}'[{to_hex(self.hash_val)}]"
-
-    def __repr__(self) -> str:
-        return str(self)
 
 @dataclass
 class BuildFrame:
@@ -54,12 +36,6 @@ class BuildSymbol:
     looping: bool = False
     frames: list[BuildFrame] = field(default_factory=list)
 
-    def __str__(self) -> str:
-        return f"Symbol {to_hex(self.symbol_hash)} ({len(self.frames)} frames)"
-
-    def __repr__(self) -> str:
-        return str(self)
-
 @dataclass
 class BuildFile:
     version: int = BUILD_VERSION
@@ -69,12 +45,6 @@ class BuildFile:
     sdf_materials: list[str] = field(default_factory=list)
     symbols: list[BuildSymbol] = field(default_factory=list)
     hashed_strings: list[HashedString] = field(default_factory=list)
-
-    def __str__(self) -> str:
-        return f"Build '{self.build_name}' ({len(self.symbols)} symbols)"
-
-    def __repr__(self) -> str:
-        return str(self)
 
 @dataclass
 class AnimElement:
@@ -130,3 +100,8 @@ class AnimFile:
     num_frames: int = 0
     anims: list[AnimData] = field(default_factory=list)
     hashed_strings: list[HashedString] = field(default_factory=list)
+
+@dataclass
+class Animation:
+    build: BuildFile = field(default_factory=BuildFile)
+    anim: AnimFile = field(default_factory=AnimFile)
