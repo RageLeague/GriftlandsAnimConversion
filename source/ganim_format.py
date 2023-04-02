@@ -24,9 +24,13 @@ class HashedString:
 class BuildFrame:
     frame_num: int = 0
     duration: int = 0
+    # The index of the material that the image is chosen from (between 0 and len(materials) - 1)
     image_index: int = 0
     bbox: BBox = field(default_factory=BBox)
+    # The top left corner of the image in the material
+    # Ranges from (0.0, 0.0) (top left) to (1.0, 1.0) (bottom right)
     uv0: Coord = field(default_factory=Coord)
+    # The bottom right corner of the image in the material
     uv1: Coord = field(default_factory=Coord)
 
 @dataclass

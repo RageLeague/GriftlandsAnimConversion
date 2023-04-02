@@ -2,12 +2,16 @@ from source.ganim_io import GriftAnimIO
 import struct
 from source.image_format import *
 
-image = read_ktex("raw_files/anim.zip/atlas0.tex")
-print(image)
-write_ktex("raw_files/anim.zip/atlas0_copy.tex", image)
+animation = GriftAnimIO.read_animation("raw_files/test.zip")
+# GriftAnimIO.write_animation("raw_files/anim_copy.zip", animation)
+print(animation)
 
-write_png("raw_files/anim.zip/atlas0.png", read_ktex("raw_files/anim.zip/atlas0.tex"))
-write_png("raw_files/anim.zip/atlas0_copy.png", read_ktex("raw_files/anim.zip/atlas0_copy.tex"))
+# image = read_png("raw_files/test.zip/atlas0.png")
+# print(image)
+# write_ktex("raw_files/test.zip/atlas0.tex", image)
+
+# write_png("raw_files/anim.zip/atlas0.png", read_ktex("raw_files/anim.zip/atlas0.tex"))
+# write_png("raw_files/anim.zip/atlas0_copy.png", read_ktex("raw_files/anim.zip/atlas0_copy.tex"))
 
 # packed = struct.pack(">ffff", 1.0, 2.0, 4.0, 8.0)
 # for i in range(4):

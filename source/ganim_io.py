@@ -320,6 +320,9 @@ class GriftAnimIO(AnimFileIO):
 
     @staticmethod
     def write_animation(animation_folder: str, animation: Animation) -> None:
+        if not os.path.exists(animation_folder):
+            os.makedirs(animation_folder)
+
         with open(os.path.join(animation_folder, "build.bin"), "wb") as build_file, open(os.path.join(animation_folder, "anim.bin"), "wb") as anim_file:
             GriftAnimIO.write_build_file(build_file, animation.build)
             GriftAnimIO.write_anim_file(anim_file, animation.anim)
