@@ -1,6 +1,7 @@
 from typing import BinaryIO, Any
 from source.ganim_format import *
 from source.file_io import AnimFileIO, WrongFormatException
+from source.image_format import read_image, write_image
 from struct import pack, unpack, calcsize
 import os
 
@@ -112,7 +113,7 @@ class GriftAnimIO(AnimFileIO):
         return result
 
     @staticmethod
-    def read_build_file(file: BinaryIO) -> BuildFile:
+    def read_build_file(file: BinaryIO, folder_path: str) -> BuildFile:
         header = file.read(len(BUILD_STRING)).decode("utf-8")
         if header != BUILD_STRING:
             raise WrongFormatException("Header must be {BUILD_STRING}")
@@ -124,7 +125,9 @@ class GriftAnimIO(AnimFileIO):
             result.build_name = GriftAnimIO.read_str(file)
             num_materials = GriftAnimIO.read_int(file)
             for _ in range(num_materials):
-                result.materials.append(GriftAnimIO.read_str(file))
+                material_name = GriftAnimIO.read_str(file)
+                image = read_image(os.path.join(folder_path, material_name))
+                result.materials.append(BuildMaterial(material_name, image))
             num_sdf_materials = GriftAnimIO.read_int(file)
             for _ in range(num_sdf_materials):
                 result.sdf_materials.append(GriftAnimIO.read_str(file))
@@ -164,7 +167,7 @@ class GriftAnimIO(AnimFileIO):
             GriftAnimIO.write_build_frame(file, frame)
 
     @staticmethod
-    def write_build_file(file: BinaryIO, build: BuildFile) -> None:
+    def write_build_file(file: BinaryIO, folder_path: str, build: BuildFile) -> None:
         GriftAnimIO.write_str(file, BUILD_STRING, False)
         GriftAnimIO.write_int(file, BUILD_VERSION)
         GriftAnimIO.write_int(file, len(build.symbols))
@@ -172,7 +175,9 @@ class GriftAnimIO(AnimFileIO):
         GriftAnimIO.write_str(file, build.build_name)
         GriftAnimIO.write_int(file, len(build.materials))
         for material in build.materials:
-            GriftAnimIO.write_str(file, material)
+            GriftAnimIO.write_str(file, material.path)
+            if material.image:
+                write_image(os.path.join(folder_path, material.path), material.image)
         GriftAnimIO.write_int(file, len(build.sdf_materials))
         for material in build.sdf_materials:
             GriftAnimIO.write_str(file, material)
@@ -314,7 +319,7 @@ class GriftAnimIO(AnimFileIO):
     @staticmethod
     def read_animation(animation_folder: str) -> Animation:
         with open(os.path.join(animation_folder, "build.bin"), "rb") as build_file, open(os.path.join(animation_folder, "anim.bin"), "rb") as anim_file:
-            build = GriftAnimIO.read_build_file(build_file)
+            build = GriftAnimIO.read_build_file(build_file, animation_folder)
             anim = GriftAnimIO.read_anim_file(anim_file)
             return Animation(build, anim)
 
@@ -324,5 +329,5 @@ class GriftAnimIO(AnimFileIO):
             os.makedirs(animation_folder)
 
         with open(os.path.join(animation_folder, "build.bin"), "wb") as build_file, open(os.path.join(animation_folder, "anim.bin"), "wb") as anim_file:
-            GriftAnimIO.write_build_file(build_file, animation.build)
+            GriftAnimIO.write_build_file(build_file, animation_folder, animation.build)
             GriftAnimIO.write_anim_file(anim_file, animation.anim)

@@ -1,4 +1,6 @@
 from dataclasses import dataclass, field
+from PIL import Image
+from typing import Optional
 BUILD_VERSION = 10
 ANIM_VERSION = 7
 
@@ -41,11 +43,16 @@ class BuildSymbol:
     frames: list[BuildFrame] = field(default_factory=list)
 
 @dataclass
+class BuildMaterial:
+    path: str = ""
+    image: Optional[Image.Image] = None
+
+@dataclass
 class BuildFile:
     version: int = BUILD_VERSION
     total_frames: int = 0
     build_name: str = ""
-    materials: list[str] = field(default_factory=list)
+    materials: list[BuildMaterial] = field(default_factory=list)
     sdf_materials: list[str] = field(default_factory=list)
     symbols: list[BuildSymbol] = field(default_factory=list)
     hashed_strings: list[HashedString] = field(default_factory=list)

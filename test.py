@@ -2,8 +2,8 @@ from source.ganim_io import GriftAnimIO
 import struct
 from source.image_format import *
 
-animation = GriftAnimIO.read_animation("raw_files/test.zip")
-# GriftAnimIO.write_animation("raw_files/anim_copy.zip", animation)
+animation = GriftAnimIO.read_animation("raw_files/anim.zip")
+GriftAnimIO.write_animation("raw_files/anim_copy.zip", animation)
 print(animation)
 
 # image = read_png("raw_files/test.zip/atlas0.png")

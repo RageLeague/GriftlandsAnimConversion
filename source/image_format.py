@@ -48,21 +48,24 @@ def write_png(filename: str, image: Image.Image) -> None:
 def read_image(filename: str, extension: Optional[str] = None) -> Image.Image:
     if extension is None:
         _, extension = os.path.splitext(filename)
-    if extension.lower() == "tex":
+    if extension.lower() == ".tex":
         return read_ktex(filename)
-    elif extension.lower() == "dds":
+    elif extension.lower() == ".dds":
         return read_dds(filename)
-    elif extension.lower() == "png":
+    elif extension.lower() == ".png":
         return read_png(filename)
     raise ValueError()
 
 def write_image(filename: str, image: Image.Image, extension: Optional[str] = None) -> None:
     if extension is None:
         _, extension = os.path.splitext(filename)
-    if extension.lower() == "tex":
+    if extension.lower() == ".tex":
         write_ktex(filename, image)
-    elif extension.lower() == "dds":
+        return
+    elif extension.lower() == ".dds":
         write_dds(filename, image)
-    elif extension.lower() == "png":
+        return
+    elif extension.lower() == ".png":
         write_png(filename, image)
+        return
     raise ValueError()
