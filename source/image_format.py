@@ -1,6 +1,7 @@
 from PIL import Image
-import io
+import io, os
 from struct import pack, unpack
+from typing import Optional
 
 KTEX_VERSION = 2
 
@@ -15,7 +16,7 @@ def read_ktex(filename: str) -> Image.Image:
             infile.seek(0)
             data=infile.read()
         else:
-            raise ValueError("Invalid .tex file")
+            raise ValueError()
 
     image=Image.open(io.BytesIO(data))
     return image
@@ -43,3 +44,25 @@ def read_png(filename: str) -> Image.Image:
 
 def write_png(filename: str, image: Image.Image) -> None:
     image.save(filename, "PNG")
+
+def read_image(filename: str, extension: Optional[str] = None) -> Image.Image:
+    if extension is None:
+        _, extension = os.path.splitext(filename)
+    if extension.lower() == "tex":
+        return read_ktex(filename)
+    elif extension.lower() == "dds":
+        return read_dds(filename)
+    elif extension.lower() == "png":
+        return read_png(filename)
+    raise ValueError()
+
+def write_image(filename: str, image: Image.Image, extension: Optional[str] = None) -> None:
+    if extension is None:
+        _, extension = os.path.splitext(filename)
+    if extension.lower() == "tex":
+        write_ktex(filename, image)
+    elif extension.lower() == "dds":
+        write_dds(filename, image)
+    elif extension.lower() == "png":
+        write_png(filename, image)
+    raise ValueError()
