@@ -3,11 +3,11 @@ import struct
 from source.image_format import *
 from source.util import overlay_atlas
 
-animation = GriftAnimIO.read_animation("raw_files/test.zip")
+animation = GriftAnimIO.read_animation("raw_files/anim.zip")
 overlay_atlas(animation)
-if animation.build.materials[0].image:
-    write_png("raw_files/anim_copy.zip/processed.png", animation.build.materials[0].image)
-# GriftAnimIO.write_animation("raw_files/anim_copy.zip", animation)
+# if animation.build.materials[0].image:
+#     write_png("raw_files/anim_copy.zip/processed.png", animation.build.materials[0].image)
+GriftAnimIO.write_animation("raw_files/anim_copy.zip", animation)
 # print(animation)
 
 # image = read_png("raw_files/test.zip/atlas0.png")

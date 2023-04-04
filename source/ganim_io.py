@@ -48,13 +48,6 @@ class GriftAnimIO(AnimFileIO):
         return output.decode(ENCODING)
 
     @staticmethod
-    def read_hashed_string(file: BinaryIO) -> HashedString:
-        result = HashedString()
-        result.hash_val = GriftAnimIO.read_int(file)
-        result.original = GriftAnimIO.read_str(file)
-        return result
-
-    @staticmethod
     def write(file: BinaryIO, fmt: str, obj: Any) -> None:
         bin = pack(fmt, obj)
         file.write(bin)
@@ -77,11 +70,6 @@ class GriftAnimIO(AnimFileIO):
             GriftAnimIO.write_int(file, len(val))
         for b in val:
             GriftAnimIO.write(file, "s", bytes(b, ENCODING))
-
-    @staticmethod
-    def write_hashed_string(file: BinaryIO, val: HashedString) -> None:
-        GriftAnimIO.write_int(file, val.hash_val)
-        GriftAnimIO.write_str(file, val.original)
 
     ### Methods for reading the build file
 
@@ -135,7 +123,9 @@ class GriftAnimIO(AnimFileIO):
                 result.symbols.append(GriftAnimIO.read_build_symbol(file))
             num_hashed_strings = GriftAnimIO.read_int(file)
             for _ in range(num_hashed_strings):
-                result.hashed_strings.append(GriftAnimIO.read_hashed_string(file))
+                hash_val = GriftAnimIO.read_int(file)
+                hash_str = GriftAnimIO.read_str(file)
+                result.hashed_strings[hash_val] = hash_str
             if file.read(1):
                 raise WrongFormatException("End of file not reached")
             return result
@@ -184,8 +174,9 @@ class GriftAnimIO(AnimFileIO):
         for symbol in build.symbols:
             GriftAnimIO.write_build_symbol(file, symbol)
         GriftAnimIO.write_int(file, len(build.hashed_strings))
-        for string in build.hashed_strings:
-            GriftAnimIO.write_hashed_string(file, string)
+        for hash_val in build.hashed_strings:
+            GriftAnimIO.write_int(file, hash_val)
+            GriftAnimIO.write_str(file, build.hashed_strings[hash_val])
 
     @staticmethod
     def read_anim_element(file: BinaryIO) -> AnimElement:
@@ -253,7 +244,9 @@ class GriftAnimIO(AnimFileIO):
                 result.anims.append(GriftAnimIO.read_anim_data(file))
             num_strings = GriftAnimIO.read_int(file)
             for _ in range(num_strings):
-                result.hashed_strings.append(GriftAnimIO.read_hashed_string(file))
+                hash_val = GriftAnimIO.read_int(file)
+                hash_str = GriftAnimIO.read_str(file)
+                result.hashed_strings[hash_val] = hash_str
             if file.read(1):
                 raise WrongFormatException("End of file not reached")
             return result
@@ -313,8 +306,9 @@ class GriftAnimIO(AnimFileIO):
         for one_anim in anim.anims:
             GriftAnimIO.write_anim_data(file, one_anim)
         GriftAnimIO.write_int(file, len(anim.hashed_strings))
-        for string in anim.hashed_strings:
-            GriftAnimIO.write_hashed_string(file, string)
+        for hash_val in anim.hashed_strings:
+            GriftAnimIO.write_int(file, hash_val)
+            GriftAnimIO.write_str(file, anim.hashed_strings[hash_val])
 
     @staticmethod
     def read_animation(animation_folder: str) -> Animation:

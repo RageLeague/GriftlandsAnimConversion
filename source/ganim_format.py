@@ -18,11 +18,6 @@ class BBox:
     size: Coord = field(default_factory=Coord)
 
 @dataclass
-class HashedString:
-    hash_val: int = 0
-    original: str = ""
-
-@dataclass
 class BuildFrame:
     frame_num: int = 0
     duration: int = 0
@@ -55,7 +50,7 @@ class BuildFile:
     materials: list[BuildMaterial] = field(default_factory=list)
     sdf_materials: list[str] = field(default_factory=list)
     symbols: list[BuildSymbol] = field(default_factory=list)
-    hashed_strings: list[HashedString] = field(default_factory=list)
+    hashed_strings: dict[int, str] = field(default_factory=dict)
 
 @dataclass
 class AnimElement:
@@ -110,7 +105,7 @@ class AnimFile:
     num_element_refs: int = 0
     num_frames: int = 0
     anims: list[AnimData] = field(default_factory=list)
-    hashed_strings: list[HashedString] = field(default_factory=list)
+    hashed_strings: dict[int, str] = field(default_factory=dict)
 
 @dataclass
 class Animation:
