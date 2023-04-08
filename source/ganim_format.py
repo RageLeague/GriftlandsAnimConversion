@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from PIL import Image
-from typing import Optional
+from typing import Optional, Protocol
 BUILD_VERSION = 10
 ANIM_VERSION = 7
 
@@ -17,6 +17,26 @@ class BBox:
     pos: Coord = field(default_factory=Coord)
     size: Coord = field(default_factory=Coord)
 
+class HasHashStrings(Protocol):
+    def get_hash_string(self, hash_val: int) -> str:
+        ...
+
+@dataclass
+class HashRef:
+    hash_val: int = 0
+    table: Optional[HasHashStrings] = None
+    def get_hash_string(self) -> str:
+        if self.table is None:
+            raise ValueError()
+        return self.table.get_hash_string(self.hash_val)
+    def __str__(self) -> str:
+        try:
+            return self.get_hash_string()
+        except Exception:
+            return f"HashRef({to_hex(self.hash_val)})"
+    def __repr__(self) -> str:
+        return str(self)
+
 @dataclass
 class BuildFrame:
     frame_num: int = 0
@@ -32,8 +52,8 @@ class BuildFrame:
 
 @dataclass
 class BuildSymbol:
-    symbol_hash: int = 0
-    color_channel_hash: int = 0
+    symbol_hash: HashRef = field(default_factory=HashRef)
+    color_channel_hash: HashRef = field(default_factory=HashRef)
     looping: bool = False
     frames: list[BuildFrame] = field(default_factory=list)
 
@@ -51,12 +71,14 @@ class BuildFile:
     sdf_materials: list[str] = field(default_factory=list)
     symbols: list[BuildSymbol] = field(default_factory=list)
     hashed_strings: dict[int, str] = field(default_factory=dict)
+    def get_hash_string(self, hash_val: int) -> str:
+        return self.hashed_strings[hash_val]
 
 @dataclass
 class AnimElement:
-    symbol_hash: int = 0
+    symbol_hash: HashRef = field(default_factory=HashRef)
     frame: int = 0
-    folder_hash: int = 0
+    folder_hash: HashRef = field(default_factory=HashRef)
 
     # Color modifier of element. Multiplicative. Ranges from [0.0, 1.0]. Note the reverse order
     c_ap: float = 0.0
@@ -83,7 +105,7 @@ class AnimElement:
     tz: float = 0.0
 
     def __str__(self) -> str:
-        return f"AnimElement {to_hex(self.symbol_hash)} (frame {self.frame})"
+        return f"AnimElement {self.symbol_hash} (frame {self.frame})"
 
     def __repr__(self) -> str:
         return str(self)
@@ -109,6 +131,8 @@ class AnimFile:
     num_frames: int = 0
     anims: list[AnimData] = field(default_factory=list)
     hashed_strings: dict[int, str] = field(default_factory=dict)
+    def get_hash_string(self, hash_val: int) -> str:
+        return self.hashed_strings[hash_val]
 
 @dataclass
 class Animation:

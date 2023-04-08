@@ -90,10 +90,10 @@ class GriftAnimIO(AnimFileIO):
         return result
 
     @staticmethod
-    def read_build_symbol(file: BinaryIO) -> BuildSymbol:
+    def read_build_symbol(file: BinaryIO, build_file: BuildFile) -> BuildSymbol:
         result = BuildSymbol()
-        result.symbol_hash = GriftAnimIO.read_int(file)
-        result.color_channel_hash = GriftAnimIO.read_int(file)
+        result.symbol_hash = HashRef(GriftAnimIO.read_int(file), build_file)
+        result.color_channel_hash = HashRef(GriftAnimIO.read_int(file), build_file)
         result.looping = GriftAnimIO.read_bool(file)
         num_frames = GriftAnimIO.read_int(file)
         for _ in range(num_frames):
@@ -120,7 +120,7 @@ class GriftAnimIO(AnimFileIO):
             for _ in range(num_sdf_materials):
                 result.sdf_materials.append(GriftAnimIO.read_str(file))
             for _ in range(total_symbols):
-                result.symbols.append(GriftAnimIO.read_build_symbol(file))
+                result.symbols.append(GriftAnimIO.read_build_symbol(file, result))
             num_hashed_strings = GriftAnimIO.read_int(file)
             for _ in range(num_hashed_strings):
                 hash_val = GriftAnimIO.read_int(file)
@@ -149,8 +149,8 @@ class GriftAnimIO(AnimFileIO):
 
     @staticmethod
     def write_build_symbol(file: BinaryIO, symbol: BuildSymbol) -> None:
-        GriftAnimIO.write_int(file, symbol.symbol_hash)
-        GriftAnimIO.write_int(file, symbol.color_channel_hash)
+        GriftAnimIO.write_int(file, symbol.symbol_hash.hash_val)
+        GriftAnimIO.write_int(file, symbol.color_channel_hash.hash_val)
         GriftAnimIO.write_bool(file, symbol.looping)
         GriftAnimIO.write_int(file, len(symbol.frames))
         for frame in symbol.frames:
@@ -179,11 +179,11 @@ class GriftAnimIO(AnimFileIO):
             GriftAnimIO.write_str(file, build.hashed_strings[hash_val])
 
     @staticmethod
-    def read_anim_element(file: BinaryIO) -> AnimElement:
+    def read_anim_element(file: BinaryIO, anim_file: AnimFile) -> AnimElement:
         result = AnimElement()
-        result.symbol_hash = GriftAnimIO.read_int(file)
+        result.symbol_hash = HashRef(GriftAnimIO.read_int(file), anim_file)
         result.frame = GriftAnimIO.read_int(file)
-        result.folder_hash = GriftAnimIO.read_int(file)
+        result.folder_hash = HashRef(GriftAnimIO.read_int(file), anim_file)
 
         result.c_ap = GriftAnimIO.read_float(file)
         result.c_bp = GriftAnimIO.read_float(file)
@@ -206,7 +206,7 @@ class GriftAnimIO(AnimFileIO):
         return result
 
     @staticmethod
-    def read_anim_frame(file: BinaryIO) -> AnimFrame:
+    def read_anim_frame(file: BinaryIO, anim_file: AnimFile) -> AnimFrame:
         result = AnimFrame()
         result.pos.x = GriftAnimIO.read_float(file)
         result.pos.y = GriftAnimIO.read_float(file)
@@ -214,11 +214,11 @@ class GriftAnimIO(AnimFileIO):
         result.size.y = GriftAnimIO.read_float(file)
         num_e = GriftAnimIO.read_int(file)
         for _ in range(num_e):
-            result.elements.append(GriftAnimIO.read_anim_element(file))
+            result.elements.append(GriftAnimIO.read_anim_element(file, anim_file))
         return result
 
     @staticmethod
-    def read_anim_data(file: BinaryIO) -> AnimData:
+    def read_anim_data(file: BinaryIO, anim_file: AnimFile) -> AnimData:
         result = AnimData()
         result.anim_name = GriftAnimIO.read_str(file)
         result.root_symbol = GriftAnimIO.read_str(file)
@@ -226,7 +226,7 @@ class GriftAnimIO(AnimFileIO):
         result.looping = GriftAnimIO.read_bool(file)
         num_f = GriftAnimIO.read_int(file)
         for _ in range(num_f):
-            result.frames.append(GriftAnimIO.read_anim_frame(file))
+            result.frames.append(GriftAnimIO.read_anim_frame(file, anim_file))
         return result
 
     @staticmethod
@@ -241,7 +241,7 @@ class GriftAnimIO(AnimFileIO):
             result.num_frames = GriftAnimIO.read_int(file)
             num_anims = GriftAnimIO.read_int(file)
             for _ in range(num_anims):
-                result.anims.append(GriftAnimIO.read_anim_data(file))
+                result.anims.append(GriftAnimIO.read_anim_data(file, result))
             num_strings = GriftAnimIO.read_int(file)
             for _ in range(num_strings):
                 hash_val = GriftAnimIO.read_int(file)
@@ -254,9 +254,9 @@ class GriftAnimIO(AnimFileIO):
 
     @staticmethod
     def write_anim_element(file: BinaryIO, element: AnimElement) -> None:
-        GriftAnimIO.write_int(file, element.symbol_hash)
+        GriftAnimIO.write_int(file, element.symbol_hash.hash_val)
         GriftAnimIO.write_int(file, element.frame)
-        GriftAnimIO.write_int(file, element.folder_hash)
+        GriftAnimIO.write_int(file, element.folder_hash.hash_val)
 
         GriftAnimIO.write_float(file, element.c_ap)
         GriftAnimIO.write_float(file, element.c_bp)
