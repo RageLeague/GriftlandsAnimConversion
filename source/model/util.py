@@ -1,4 +1,4 @@
-from source.ganim_format import *
+from source.model.ganim_format import *
 from PIL import Image, ImageDraw
 
 colors = [

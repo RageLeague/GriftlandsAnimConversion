@@ -1,4 +1,4 @@
-from source.ganim_format import Animation
+from source.model.ganim_format import Animation
 
 class AnimFileIO:
     @staticmethod

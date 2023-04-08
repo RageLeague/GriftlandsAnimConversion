@@ -1,7 +1,7 @@
 from typing import BinaryIO, Any
-from source.ganim_format import *
-from source.file_io import AnimFileIO, WrongFormatException
-from source.image_format import read_image, write_image
+from source.model.ganim_format import *
+from source.model.file_io import AnimFileIO, WrongFormatException
+from source.model.image_format import read_image, write_image
 from struct import pack, unpack, calcsize
 import os
 
