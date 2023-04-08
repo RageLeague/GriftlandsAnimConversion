@@ -136,5 +136,5 @@ class AnimFile:
 
 @dataclass
 class Animation:
-    build: BuildFile = field(default_factory=BuildFile)
-    anim: AnimFile = field(default_factory=AnimFile)
+    build: Optional[BuildFile] = None
+    anim: Optional[AnimFile] = None

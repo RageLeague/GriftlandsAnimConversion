@@ -13,6 +13,8 @@ colors = [
 def overlay_atlas(anim: Animation) -> None:
     # Set of tuples: (index, x1, y1, x2, y2)
     seen_box: set[tuple[int, int, int, int, int]] = set()
+    if not anim.build:
+        return
     for symbol in anim.build.symbols:
         for frame in symbol.frames:
             material = anim.build.materials[frame.image_index]

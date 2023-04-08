@@ -312,16 +312,24 @@ class GriftAnimIO(AnimFileIO):
 
     @staticmethod
     def read_animation(animation_folder: str) -> Animation:
-        with open(os.path.join(animation_folder, "build.bin"), "rb") as build_file, open(os.path.join(animation_folder, "anim.bin"), "rb") as anim_file:
-            build = GriftAnimIO.read_build_file(build_file, animation_folder)
-            anim = GriftAnimIO.read_anim_file(anim_file)
-            return Animation(build, anim)
+        result = Animation()
+        build_path = os.path.join(animation_folder, "build.bin")
+        anim_path = os.path.join(animation_folder, "anim.bin")
+        if os.path.isfile(build_path):
+            with open(build_path, "rb") as build_file:
+                result.build = GriftAnimIO.read_build_file(build_file, animation_folder)
+        if os.path.isfile(anim_path):
+            with open(anim_path, "rb") as anim_file:
+                result.anim = GriftAnimIO.read_anim_file(anim_file)
+        return result
 
     @staticmethod
     def write_animation(animation_folder: str, animation: Animation) -> None:
         if not os.path.exists(animation_folder):
             os.makedirs(animation_folder)
-
-        with open(os.path.join(animation_folder, "build.bin"), "wb") as build_file, open(os.path.join(animation_folder, "anim.bin"), "wb") as anim_file:
-            GriftAnimIO.write_build_file(build_file, animation_folder, animation.build)
-            GriftAnimIO.write_anim_file(anim_file, animation.anim)
+        if animation.build is not None:
+            with open(os.path.join(animation_folder, "build.bin"), "wb") as build_file:
+                GriftAnimIO.write_build_file(build_file, animation_folder, animation.build)
+        if animation.anim is not None:
+            with open(os.path.join(animation_folder, "anim.bin"), "wb") as anim_file:
+                GriftAnimIO.write_anim_file(anim_file, animation.anim)
