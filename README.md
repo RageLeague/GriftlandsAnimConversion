@@ -1,6 +1,12 @@
 # GriftlandsAnimConversion
 
-A python tool to help convert from Griftlands animation format to more useful formats
+A python tool to help convert from Griftlands animation format to more useful formats.
+
+## Prerequisites
+
+- Python (3.10.6+)
+- Pillow fork of PIL (9.0.1+)
+- tkinter
 
 ## Griftlands Animation Formats
 

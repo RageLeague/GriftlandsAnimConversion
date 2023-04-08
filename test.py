@@ -3,8 +3,8 @@ import struct
 from source.model.image_format import *
 from source.model.util import overlay_atlas
 
-anim = GriftAnimIO.read_animation("raw_files/test_slide.zip")
-# head = GriftAnimIO.read_animation("raw_files/test.zip")
+# anim = GriftAnimIO.read_animation("raw_files/test_slide.zip")
+head = GriftAnimIO.read_animation("raw_files/test.zip")
 # build = GriftAnimIO.read_animation("raw_files/test_build.zip")
 pass
 # overlay_atlas(animation)
