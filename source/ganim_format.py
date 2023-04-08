@@ -70,13 +70,16 @@ class AnimElement:
     c_ga: float = 0.0
     c_ra: float = 0.0
 
-    # Something about matrix
+    # Affine transformation matrix
+    # https://helpx.adobe.com/flash/webgl-runtime-api-help/matrix.html
     mat_a: float = 0.0
     mat_b: float = 0.0
     mat_c: float = 0.0
     mat_d: float = 0.0
     tx: float = 0.0
     ty: float = 0.0
+
+    # Index? The ordering for the element
     tz: float = 0.0
 
     def __str__(self) -> str:
