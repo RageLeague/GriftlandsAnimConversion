@@ -41,14 +41,24 @@ class ImageEditor(tk.Toplevel):
 
         ttk.Separator(self, orient="horizontal").pack(side="top", fill="x", padx=PADDING)
 
-        self.display_image: ttk.Label = ttk.Label(self)
-        self.display_image.pack(side="top", fill="x", padx=PADDING, pady=PADDING)
+        image_frame = ttk.Frame(self)
+        image_frame.pack(side="top", fill="both", padx=PADDING, pady=PADDING)
+
+        self.display_image: tk.Canvas = tk.Canvas(image_frame)
+
+        h_bar = ttk.Scrollbar(image_frame, orient="horizontal", command=self.display_image.xview)
+        h_bar.pack(side="bottom", fill="x")
+        v_bar = ttk.Scrollbar(image_frame, orient="vertical", command=self.display_image.yview)
+        v_bar.pack(side="right", fill="y")
+
+        self.display_image.configure(xscrollcommand=h_bar.set, yscrollcommand=v_bar.set)
+        self.display_image.pack(side="top", fill="both", expand=True)
 
         self.update_image(None) # Image.new("RGBA", (600, 800), "purple")
 
     def open_image(self) -> None:
         try:
-            filename = filedialog.askopenfilename(filetypes=[("PNG File", ".png"), ("Klei Tex File", ".tex"), ("DDS File", ".dds")], initialdir=self.image_name and os.path.dirname(self.image_name))
+            filename = filedialog.askopenfilename(filetypes=[("Any Image File", [".png", ".tex", ".dds"]), ("PNG File", ".png"), ("Klei Tex File", ".tex"), ("DDS File", ".dds")], initialdir=self.image_name and os.path.dirname(self.image_name))
             # print(filename)
             if filename:
                 self.update_image(read_image(filename), filename)
@@ -60,7 +70,7 @@ class ImageEditor(tk.Toplevel):
         if self.loaded_image is None:
             return
         try:
-            filename = filedialog.asksaveasfilename(filetypes=[("PNG File", ".png"), ("Klei Tex File", ".tex"), ("DDS File", ".dds")], initialfile=self.image_name)
+            filename = filedialog.asksaveasfilename(filetypes=[("Any Image File", [".png", ".tex", ".dds"]), ("PNG File", ".png"), ("Klei Tex File", ".tex"), ("DDS File", ".dds")], initialfile=self.image_name and os.path.basename(self.image_name))
             # print(filename)
             if filename:
                 write_image(filename, self.loaded_image)
@@ -74,7 +84,16 @@ class ImageEditor(tk.Toplevel):
         self.loaded_image = image
         self.loaded_photo_image: Optional[ImageTk.PhotoImage] = self.loaded_image and ImageTk.PhotoImage(self.loaded_image)
         self.image_info.configure(text=self.get_image_info())
-        self.display_image.configure(image=self.loaded_photo_image or "")
+
+        self.display_image.delete("all")
+        if self.loaded_photo_image:
+            self.display_image.configure(width=self.loaded_photo_image.width(), height=self.loaded_photo_image.height())
+            self.display_image.create_image((0, 0), image=self.loaded_photo_image, anchor="nw")
+            self.display_image.configure(scrollregion=self.display_image.bbox("all"))
+        else:
+            self.display_image.configure(width=200, height=100)
+            self.display_image.configure(scrollregion=self.display_image.bbox("all"))
+
 
     def get_image_info(self) -> str:
         image_name = self.image_name and os.path.basename(self.image_name)
