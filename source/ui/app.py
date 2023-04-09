@@ -6,6 +6,8 @@ from PIL import Image, ImageTk
 from source.model.image_format import read_image, write_image
 import os, traceback
 
+PADDING = 5
+
 class AnimEditor(tk.Toplevel):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -34,23 +36,15 @@ class ImageEditor(tk.Toplevel):
 
         self.menubar.add_cascade(label="File", menu=fileMenu)
 
-        self.frame = ttk.Frame(self, padding=10)
-        self.frame.grid(sticky="ew")
+        self.image_info: ttk.Label = ttk.Label(self, anchor="n")
+        self.image_info.pack(side="top", fill="x", padx=PADDING, pady=PADDING)
 
-        self.frame.pack(expand=True)
+        ttk.Separator(self, orient="horizontal").pack(side="top", fill="x", padx=PADDING)
 
-        self.image_info: ttk.Label = ttk.Label(self.frame, anchor="w")
-        self.image_info.grid(column=0, row=0, sticky="ew")
-
-        ttk.Separator(self.frame, orient="horizontal").grid(column=0, row=1, sticky="ew")
-
-        self.display_image: ttk.Label = ttk.Label(self.frame)
-        self.display_image.grid(column=0, row=2)
+        self.display_image: ttk.Label = ttk.Label(self)
+        self.display_image.pack(side="top", fill="x", padx=PADDING, pady=PADDING)
 
         self.update_image(None) # Image.new("RGBA", (600, 800), "purple")
-
-        for widget in self.frame.winfo_children():
-            widget.grid(padx=5, pady=5)
 
     def open_image(self) -> None:
         try:
@@ -92,7 +86,7 @@ class App(tk.Frame):
         super().__init__( *args, **kwargs)
         self.pack()
 
-        frame = ttk.Frame(self, padding=10)
+        frame = ttk.Frame(self, padding=2 * PADDING)
         frame.grid()
 
         ttk.Label(frame, text="Welcome to Griftlands Animation Explorer!").grid(column=0, row=0, columnspan=3)
@@ -101,7 +95,7 @@ class App(tk.Frame):
         ttk.Button(frame, text="GitHub", command=lambda: wb.open("https://github.com/RageLeague/GriftlandsAnimConversion")).grid(column=2, row=1)
 
         for widget in frame.winfo_children():
-            widget.grid(padx=5, pady=5)
+            widget.grid(padx=PADDING, pady=PADDING)
 
 
 def run():
