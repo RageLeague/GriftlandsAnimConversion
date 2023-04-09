@@ -1,8 +1,10 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog, messagebox
 import webbrowser as wb
 from typing import Optional
 from PIL import Image, ImageTk
+from source.model.image_format import read_image, write_image
+import os, traceback
 
 class AnimEditor(tk.Toplevel):
     def __init__(self, *args, **kwargs) -> None:
@@ -21,42 +23,67 @@ class ImageEditor(tk.Toplevel):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.title("Image Editor")
+        self.minsize(200, 100)
 
         self.menubar = tk.Menu(self)
         self["menu"] = self.menubar
 
         fileMenu = tk.Menu(self.menubar)
-        fileMenu.add_command(label="Open", command=lambda: None)
-        fileMenu.add_command(label="Save", command=lambda: None)
-        fileMenu.add_command(label="Save As", command=lambda: None)
+        fileMenu.add_command(label="Open", command=self.open_image)
+        fileMenu.add_command(label="Save", command=self.save_image)
 
         self.menubar.add_cascade(label="File", menu=fileMenu)
 
         self.frame = ttk.Frame(self, padding=10)
-        self.frame.grid()
+        self.frame.grid(sticky="ew")
 
-        self.image_info: ttk.Label = ttk.Label(self.frame)
-        self.image_info.grid(column=0, row=0)
+        self.frame.pack(expand=True)
+
+        self.image_info: ttk.Label = ttk.Label(self.frame, anchor="w")
+        self.image_info.grid(column=0, row=0, sticky="ew")
 
         ttk.Separator(self.frame, orient="horizontal").grid(column=0, row=1, sticky="ew")
 
         self.display_image: ttk.Label = ttk.Label(self.frame)
         self.display_image.grid(column=0, row=2)
 
-        self.update_image(Image.new("RGBA", (600, 800), "purple"))
+        self.update_image(None) # Image.new("RGBA", (600, 800), "purple")
 
         for widget in self.frame.winfo_children():
             widget.grid(padx=5, pady=5)
 
+    def open_image(self) -> None:
+        try:
+            filename = filedialog.askopenfilename(filetypes=[("PNG File", ".png"), ("Klei Tex File", ".tex"), ("DDS File", ".dds")], initialdir=self.image_name and os.path.dirname(self.image_name))
+            # print(filename)
+            if filename:
+                self.update_image(read_image(filename), filename)
+        except Exception as e:
+            traceback.print_exception(e)
+            messagebox.showerror("Error while reading file", f"{type(e).__name__}: {e}")
+
+    def save_image(self) -> None:
+        if self.loaded_image is None:
+            return
+        try:
+            filename = filedialog.asksaveasfilename(filetypes=[("PNG File", ".png"), ("Klei Tex File", ".tex"), ("DDS File", ".dds")], initialfile=self.image_name)
+            # print(filename)
+            if filename:
+                write_image(filename, self.loaded_image)
+        except Exception as e:
+            traceback.print_exception(e)
+            messagebox.showerror("Error while writing file", f"{type(e).__name__}: {e}")
+
+
     def update_image(self, image: Optional[Image.Image], image_name: Optional[str] = None) -> None:
         self.image_name = image_name
         self.loaded_image = image
-        self.loaded_photo_image: Optional[ImageTk.PhotoImage] = ImageTk.PhotoImage(self.loaded_image)
+        self.loaded_photo_image: Optional[ImageTk.PhotoImage] = self.loaded_image and ImageTk.PhotoImage(self.loaded_image)
         self.image_info.configure(text=self.get_image_info())
-        self.display_image.configure(image=self.loaded_photo_image)
+        self.display_image.configure(image=self.loaded_photo_image or "")
 
     def get_image_info(self) -> str:
-        image_name = self.image_name
+        image_name = self.image_name and os.path.basename(self.image_name)
         width, height = self.loaded_image.size if self.loaded_image is not None else (0, 0)
         return f"{image_name} ({width}x{height})"
 
