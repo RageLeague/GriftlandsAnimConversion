@@ -11,6 +11,8 @@ PADDING = 5
 class AnimEditor(tk.Toplevel):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.title("Anim Editor")
+        self.minsize(800, 600)
 
         self.menubar = tk.Menu(self)
         self["menu"] = self.menubar
@@ -20,6 +22,13 @@ class AnimEditor(tk.Toplevel):
         fileMenu.add_command(label="Save", command=lambda: None)
 
         self.menubar.add_cascade(label="File", menu=fileMenu)
+
+        # Navigate through a project
+        # Can navigate through the atlas, builds, and anims
+        self.navbar = tk.Frame(self)
+        self.navbar.pack(side="left", fill="y", padx=PADDING, pady=PADDING)
+
+        ttk.Separator(self, orient="vertical").pack(side="left", fill="y", pady=PADDING)
 
 class ImageEditor(tk.Toplevel):
     def __init__(self, *args, **kwargs) -> None:
