@@ -4,6 +4,7 @@ import webbrowser as wb
 from typing import Optional
 from PIL import Image, ImageTk
 from source.model.image_format import read_image, write_image
+from source.ui.scrollable_canvas import ScrollableCanvas
 import os, traceback
 
 PADDING = 5
@@ -73,18 +74,9 @@ class ImageEditor(tk.Toplevel):
 
         ttk.Separator(self, orient="horizontal").pack(side="top", fill="x", padx=PADDING)
 
-        image_frame = ttk.Frame(self)
-        image_frame.pack(side="top", fill="both", padx=PADDING, pady=PADDING)
+        self.image = ScrollableCanvas(self)
 
-        self.display_image: tk.Canvas = tk.Canvas(image_frame)
-
-        h_bar = ttk.Scrollbar(image_frame, orient="horizontal", command=self.display_image.xview)
-        h_bar.pack(side="bottom", fill="x")
-        v_bar = ttk.Scrollbar(image_frame, orient="vertical", command=self.display_image.yview)
-        v_bar.pack(side="right", fill="y")
-
-        self.display_image.configure(xscrollcommand=h_bar.set, yscrollcommand=v_bar.set)
-        self.display_image.pack(side="top", fill="both", expand=True)
+        self.image.pack(side="top", fill="both", padx=PADDING, pady=PADDING)
 
         self.update_image(None) # Image.new("RGBA", (600, 800), "purple")
 
@@ -117,14 +109,14 @@ class ImageEditor(tk.Toplevel):
         self.loaded_photo_image: Optional[ImageTk.PhotoImage] = self.loaded_image and ImageTk.PhotoImage(self.loaded_image)
         self.image_info.configure(text=self.get_image_info())
 
-        self.display_image.delete("all")
+        self.image.canvas.delete("all")
         if self.loaded_photo_image:
-            self.display_image.configure(width=self.loaded_photo_image.width(), height=self.loaded_photo_image.height())
-            self.display_image.create_image((0, 0), image=self.loaded_photo_image, anchor="nw")
-            self.display_image.configure(scrollregion=self.display_image.bbox("all"))
+            self.image.canvas.configure(width=self.loaded_photo_image.width(), height=self.loaded_photo_image.height())
+            self.image.canvas.create_image((0, 0), image=self.loaded_photo_image, anchor="nw")
+            self.image.canvas.configure(scrollregion=self.image.canvas.bbox("all"))
         else:
-            self.display_image.configure(width=200, height=100)
-            self.display_image.configure(scrollregion=self.display_image.bbox("all"))
+            self.image.canvas.configure(width=200, height=100)
+            self.image.canvas.configure(scrollregion=self.image.canvas.bbox("all"))
 
 
     def get_image_info(self) -> str:
