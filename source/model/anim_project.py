@@ -12,6 +12,15 @@ class HasUID:
     _uid: int = 0
 
 @dataclass
+class UIDRef:
+    project: 'AnimProject' | None = None
+    uid: int = 0
+
+    def get(self):
+        if self.project is None:
+            raise ValueError("Variable 'project' is undefined")
+
+@dataclass
 class AtlasImage(HasUID):
     image: Optional[Image.Image] = None
     # Position of top left corner of image within the atlas
@@ -32,6 +41,7 @@ class Atlas(HasUID):
 class AnimProject:
     # Dict of atlases based on uid
     atlases: dict[int, Atlas] = field(default_factory=dict)
+    objects_by_uid: dict[int, HasUID] = field(default_factory=dict)
 
     _current_uid: int = 0
     def get_new_uid(self):
