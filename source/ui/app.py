@@ -51,8 +51,11 @@ class AnimEditor(tk.Toplevel):
 
         ttk.Separator(self.workspace, orient="horizontal").pack(side="bottom", fill="x", padx=PADDING)
 
-        self.canvas = tk.Canvas(self.workspace, bg="white")
-        self.canvas.pack(side="top", fill="both", expand=True, padx=PADDING, pady=PADDING)
+        self.work_canvas = ScrollableCanvas(self.workspace)
+        self.work_canvas.canvas.configure(bg="white")
+        self.work_canvas.set_size(400, 300)
+        self.work_canvas.resize_scroll()
+        self.work_canvas.pack(side="top", fill="both", expand=True, padx=PADDING, pady=PADDING)
 
 class ImageEditor(tk.Toplevel):
     def __init__(self, *args, **kwargs) -> None:
