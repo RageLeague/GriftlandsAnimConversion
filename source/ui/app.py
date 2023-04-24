@@ -25,10 +25,33 @@ class AnimEditor(tk.Toplevel):
 
         # Navigate through a project
         # Can navigate through the atlas, builds, and anims
-        self.navbar = tk.Frame(self)
+        self.navbar = ttk.Notebook(self)
         self.navbar.pack(side="left", fill="y", padx=PADDING, pady=PADDING)
 
+        # create frames
+        frame1 = ttk.Frame(self.navbar, width=200)
+        frame2 = ttk.Frame(self.navbar, width=200)
+
+        frame1.pack(fill='both', expand=True)
+        frame2.pack(fill='both', expand=True)
+
+        # add frames to notebook
+
+        self.navbar.add(frame1, text='Atlas')
+        self.navbar.add(frame2, text='Build')
+
         ttk.Separator(self, orient="vertical").pack(side="left", fill="y", pady=PADDING)
+
+        self.workspace = tk.Frame(self)
+        self.workspace.pack(side="left", fill='both', expand=True)
+
+        self.config_panel = tk.Frame(self.workspace, height=200)
+        self.config_panel.pack(side="bottom", fill="x", padx=PADDING, pady=PADDING)
+
+        ttk.Separator(self.workspace, orient="horizontal").pack(side="bottom", fill="x", padx=PADDING)
+
+        self.canvas = tk.Canvas(self.workspace, bg="white")
+        self.canvas.pack(side="top", fill="both", expand=True, padx=PADDING, pady=PADDING)
 
 class ImageEditor(tk.Toplevel):
     def __init__(self, *args, **kwargs) -> None:
