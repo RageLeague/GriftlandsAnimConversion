@@ -111,12 +111,12 @@ class ImageEditor(tk.Toplevel):
 
         self.image.canvas.delete("all")
         if self.loaded_photo_image:
-            self.image.canvas.configure(width=self.loaded_photo_image.width(), height=self.loaded_photo_image.height())
+            self.image.set_size(self.loaded_photo_image.width(), self.loaded_photo_image.height())
             self.image.canvas.create_image((0, 0), image=self.loaded_photo_image, anchor="nw")
-            self.image.canvas.configure(scrollregion=self.image.canvas.bbox("all"))
+            self.image.resize_scroll()
         else:
-            self.image.canvas.configure(width=200, height=100)
-            self.image.canvas.configure(scrollregion=self.image.canvas.bbox("all"))
+            self.image.set_size(200, 100)
+            self.image.resize_scroll()
 
 
     def get_image_info(self) -> str:
