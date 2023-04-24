@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from PIL import Image
-from typing import Optional
+from typing import Optional, TypeVar, Generic, Any
+
+T = TypeVar("T")
 
 @dataclass
 class IntCoord:
@@ -12,13 +14,18 @@ class HasUID:
     _uid: int = 0
 
 @dataclass
-class UIDRef:
-    project: 'AnimProject' | None = None
+class UIDRef(Generic[T]):
+    obj_type: type[T] = field()
+    project: 'AnimProject' = field()
     uid: int = 0
 
-    def get(self):
-        if self.project is None:
-            raise ValueError("Field 'project' is None")
+    def get(self) -> T:
+        if self.uid not in self.project.objects_by_uid:
+            raise ValueError(f"Object with uid {self.uid} does not exist")
+        obj: Any = self.project.objects_by_uid[self.uid]
+        if not isinstance(obj, self.obj_type):
+            raise ValueError(f"Object with uid {self.uid} is not of type {self.obj_type}")
+        return obj
 
 @dataclass
 class AtlasImage(HasUID):
