@@ -70,7 +70,16 @@ class AnimProject:
         return self._current_uid
 
     def register_object(self, obj: U) -> U:
-        new_id = self.get_new_uid()
+        new_id = obj._uid or self.get_new_uid()
+        if new_id in self.objects_by_uid and self.objects_by_uid[new_id] != obj:
+            raise ValueError(f"Object with id {new_id} already exist")
         self.objects_by_uid[new_id] = obj
         obj._uid = new_id
         return obj
+
+    def add_atlas(self, atlas: Atlas) -> None:
+        self.register_object(atlas)
+        obj_id = atlas._uid
+        if obj_id in self.atlases and self.atlases[obj_id] != atlas:
+            raise ValueError(f"Atlas with id {obj_id} already exist")
+        self.atlases[obj_id] = atlas
