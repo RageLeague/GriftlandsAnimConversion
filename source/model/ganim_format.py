@@ -27,7 +27,7 @@ class HashRef:
     table: Optional[HasHashStrings] = None
     def get_hash_string(self) -> str:
         if self.table is None:
-            raise ValueError()
+            raise ValueError("Field 'table' is None")
         return self.table.get_hash_string(self.hash_val)
     def __str__(self) -> str:
         try:

@@ -18,7 +18,7 @@ class UIDRef:
 
     def get(self):
         if self.project is None:
-            raise ValueError("Variable 'project' is undefined")
+            raise ValueError("Field 'project' is None")
 
 @dataclass
 class AtlasImage(HasUID):

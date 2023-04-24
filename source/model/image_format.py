@@ -16,7 +16,7 @@ def read_ktex(filename: str) -> Image.Image:
             infile.seek(0)
             data=infile.read()
         else:
-            raise ValueError()
+            raise ValueError("Unknown format")
 
     image=Image.open(io.BytesIO(data))
     return image
@@ -54,7 +54,7 @@ def read_image(filename: str, extension: Optional[str] = None) -> Image.Image:
         return read_dds(filename)
     elif extension.lower() == ".png":
         return read_png(filename)
-    raise ValueError()
+    raise ValueError("Unknown format")
 
 def write_image(filename: str, image: Image.Image, extension: Optional[str] = None) -> None:
     if extension is None:
@@ -68,4 +68,4 @@ def write_image(filename: str, image: Image.Image, extension: Optional[str] = No
     elif extension.lower() == ".png":
         write_png(filename, image)
         return
-    raise ValueError()
+    raise ValueError("Unknown format")
