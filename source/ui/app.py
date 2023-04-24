@@ -53,7 +53,6 @@ class AnimEditor(tk.Toplevel):
 
         self.work_canvas = ScrollableCanvas(self.workspace)
         self.work_canvas.canvas.configure(bg="white")
-        self.work_canvas.set_size(400, 300)
         self.work_canvas.resize_scroll()
         self.work_canvas.pack(side="top", fill="both", expand=True, padx=PADDING, pady=PADDING)
 

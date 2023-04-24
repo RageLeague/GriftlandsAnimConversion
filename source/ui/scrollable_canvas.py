@@ -14,8 +14,15 @@ class ScrollableCanvas(tk.Frame):
         self.canvas.configure(xscrollcommand=h_bar.set, yscrollcommand=v_bar.set)
         self.canvas.pack(side="top", fill="both", expand=True)
 
+        self.canvas_padding = 0
+
     def set_size(self, width: int, height: int) -> None:
         self.canvas.configure(width=width, height=height)
 
     def resize_scroll(self) -> None:
-        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        bbox = self.canvas.bbox("all")
+        if bbox:
+            x1, y1, x2, y2 = bbox
+            self.canvas.configure(scrollregion=(x1 - self.canvas_padding, y1 - self.canvas_padding, x2 + self.canvas_padding, y2 + self.canvas_padding))
+        else:
+            self.canvas.configure(scrollregion=bbox)
