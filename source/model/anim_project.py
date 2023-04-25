@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from PIL import Image
 from typing import Optional, TypeVar
+import weakref
 
 @dataclass
 class IntCoord:
@@ -17,15 +18,21 @@ U = TypeVar("U", bound=HasUID)
 @dataclass
 class AtlasImage(HasUID):
     # Reference to the atlas that this image belongs to
-    atlas: 'Atlas' = field(default_factory=lambda: Atlas())
+    atlas: weakref.ref[Optional['Atlas']] = field(default_factory=lambda: weakref.ref(None))
     # Position of top left corner of image within the atlas
     pos: IntCoord = field(default_factory=IntCoord)
     # Optional name for the image to better identify it
     name: str = ""
 
 @dataclass
+class AtlasParent:
+    parent: weakref.ref[Optional['Atlas']] = field(default_factory=lambda: weakref.ref(None))
+    # Position of top left corner of image within the atlas
+    pos: IntCoord = field(default_factory=IntCoord)
+
+@dataclass
 class Atlas(HasUID):
-    parent: Optional['AtlasParent'] = None
+    parent_info: AtlasParent = field(default_factory=AtlasParent)
     source: Optional[Image.Image] = None
     # Dict of images based on uid
     images: dict[int, AtlasImage] = field(default_factory=dict)
@@ -45,12 +52,12 @@ class Atlas(HasUID):
         if obj_id in self.images and self.images[obj_id] != image:
             raise ValueError(f"Image with id {obj_id} already exist")
         self.images[obj_id] = image
-        image.atlas = self
+        image.atlas = weakref.ref(self)
 
     def remove_parent(self) -> None:
-        if self.parent:
-            del self.parent.parent.children[self._uid]
-            self.parent = None
+        parent = self.parent_info.parent()
+        if parent is not None:
+            del parent.children[self._uid]
 
     def add_child(self, atlas: 'Atlas') -> None:
         if self._project is None:
@@ -61,19 +68,13 @@ class Atlas(HasUID):
             raise ValueError(f"Atlas with id {obj_id} already exist")
         atlas.remove_parent()
         self.children[obj_id] = atlas
-        atlas.parent = AtlasParent(self, IntCoord())
-
-@dataclass
-class AtlasParent:
-    parent: Atlas = field(default_factory=Atlas)
-    # Position of top left corner of image within the atlas
-    pos: IntCoord = field(default_factory=IntCoord)
+        atlas.parent_info = AtlasParent(weakref.ref(self), IntCoord()) # TODO: Set a better default position
 
 @dataclass
 class AnimProject:
     # Dict of atlases based on uid
     atlas: Atlas = field(default_factory=Atlas)
-    objects_by_uid: dict[int, HasUID] = field(default_factory=dict)
+    objects_by_uid: weakref.WeakValueDictionary[int, HasUID] = field(default_factory=weakref.WeakValueDictionary)
 
     _current_uid: int = 0
     def get_new_uid(self) -> int:
