@@ -79,6 +79,9 @@ class AnimProject:
     _current_uid: int = 0
     def get_new_uid(self) -> int:
         self._current_uid += 1
+        # Make sure it's not a dupe
+        while self._current_uid in self.objects_by_uid:
+            self._current_uid += 1
         return self._current_uid
 
     def register_object(self, obj: U) -> U:
