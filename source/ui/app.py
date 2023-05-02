@@ -4,7 +4,9 @@ import webbrowser as wb
 from typing import Optional
 from PIL import Image, ImageTk
 from source.model.image_format import read_image, write_image
+from source.model.anim_project import get_test_project
 from source.ui.scrollable_canvas import ScrollableCanvas
+from source.ui.node_treeview import NodeTreeView
 import os, traceback
 
 PADDING = 5
@@ -14,6 +16,8 @@ class AnimEditor(tk.Toplevel):
         super().__init__(*args, **kwargs)
         self.title("Anim Editor")
         self.minsize(800, 600)
+
+        self.loaded_project = get_test_project()
 
         self.menubar = tk.Menu(self)
         self["menu"] = self.menubar
@@ -31,6 +35,10 @@ class AnimEditor(tk.Toplevel):
 
         # create frames
         frame1 = ttk.Frame(self.navbar, width=200)
+        frame_tree = NodeTreeView(frame1)
+        frame_tree.set_base_node(self.loaded_project.atlas)
+        frame_tree.pack(fill='both', expand=True)
+
         frame2 = ttk.Frame(self.navbar, width=200)
 
         frame1.pack(fill='both', expand=True)
