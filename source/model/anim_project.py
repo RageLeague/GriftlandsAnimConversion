@@ -42,7 +42,7 @@ class AtlasImage(HasUID):
         yield # This is here to make this function a generator lol
 
     def get_node_name(self) -> str:
-        return self.name or "Image"
+        return self.name or f"Image {self.get_uid()}"
 
 @dataclass
 class AtlasParent:
@@ -68,7 +68,7 @@ class Atlas(HasUID):
         if image.atlas is not None and image.atlas != self:
             raise ValueError("Image already assigned to an atlas")
         self._project.register_object(image)
-        obj_id = image._uid
+        obj_id = image.get_uid()
         if obj_id in self.images and self.images[obj_id] != image:
             raise ValueError(f"Image with id {obj_id} already exist")
         self.images[obj_id] = image
@@ -79,13 +79,13 @@ class Atlas(HasUID):
         parent = self.parent_info.parent
         parent = parent and parent()
         if parent is not None:
-            del parent.children[self._uid]
+            del parent.children[self.get_uid()]
 
     def add_child(self, atlas: 'Atlas') -> 'Atlas':
         if self._project is None:
             raise ValueError("Field _project is None")
         self._project.register_object(atlas)
-        obj_id = atlas._uid
+        obj_id = atlas.get_uid()
         if obj_id in self.children and self.children[obj_id] != atlas:
             raise ValueError(f"Atlas with id {obj_id} already exist")
         atlas.remove_parent()
@@ -100,7 +100,7 @@ class Atlas(HasUID):
             yield self.children[child_id]
 
     def get_node_name(self) -> str:
-        return self.name or "Atlas"
+        return self.name or f"Atlas {self.get_uid()}"
 
 @dataclass
 class AnimProject:
@@ -119,7 +119,7 @@ class AnimProject:
     def register_object(self, obj: U) -> U:
         if obj._project is not None and obj._project != self:
             raise ValueError(f"Object already belongs to another project")
-        new_id = obj._uid or self.get_new_uid()
+        new_id = obj.get_uid() or self.get_new_uid()
         if new_id in self.objects_by_uid and self.objects_by_uid[new_id] != obj:
             raise ValueError(f"Object with id {new_id} already exist")
         self.objects_by_uid[new_id] = obj
