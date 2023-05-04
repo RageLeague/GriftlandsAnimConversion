@@ -1,12 +1,7 @@
 from dataclasses import dataclass, field
 from PIL import Image
-from typing import Optional, TypeVar, Protocol, Generator
+from typing import Optional, TypeVar, Protocol, Generator, Any, runtime_checkable
 import weakref
-
-@dataclass
-class IntCoord:
-    x: int = 0
-    y: int = 0
 
 @dataclass
 class HasUID:
@@ -26,7 +21,31 @@ class TreeNode(Protocol):
     def get_uid(self) -> int:
         ...
 
+@runtime_checkable
+class JsonSavable(Protocol):
+    def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
+        ...
+
+@runtime_checkable
+class UIDJsonSavable(Protocol):
+    def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
+        ...
+
+    def get_uid(self) -> int:
+        ...
+
 U = TypeVar("U", bound=HasUID)
+
+@dataclass
+class IntCoord:
+    x: int = 0
+    y: int = 0
+    def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
+        return {
+            "_type": self.__class__.__name__,
+            "x": self.x,
+            "y": self.y,
+        }
 
 @dataclass
 class AtlasImage(HasUID):
@@ -44,11 +63,32 @@ class AtlasImage(HasUID):
     def get_node_name(self) -> str:
         return self.name or f"Image {self.get_uid()}"
 
+    def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
+        atlas = self.atlas and self.atlas()
+        result = {
+            "_uid": self._uid,
+            "_type": self.__class__.__name__,
+            "name": self.name,
+            "pos": self.pos.save_json(project, obj_dict, asset_dict),
+        }
+        if atlas:
+            result["atlas"] = project.save_json_tracker(atlas.get_uid(), obj_dict, asset_dict)
+        return result
+
 @dataclass
 class AtlasParent:
     parent: Optional[weakref.ref['Atlas']] = None
     # Position of top left corner of image within the atlas
     pos: IntCoord = field(default_factory=IntCoord)
+    def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
+        parent = self.parent and self.parent()
+        result = {
+            "_type": self.__class__.__name__,
+            "pos": self.pos.save_json(project, obj_dict, asset_dict),
+        }
+        if parent:
+            result["parent"] = project.save_json_tracker(parent.get_uid(), obj_dict, asset_dict)
+        return result
 
 @dataclass
 class Atlas(HasUID):
@@ -102,6 +142,24 @@ class Atlas(HasUID):
     def get_node_name(self) -> str:
         return self.name or f"Atlas {self.get_uid()}"
 
+    def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
+        result = {
+            "_uid": self._uid,
+            "_type": self.__class__.__name__,
+            "parent_info": self.parent_info.save_json(project, obj_dict, asset_dict),
+            "name": self.name,
+            "size": self.size.save_json(project, obj_dict, asset_dict),
+            "images": [project.save_json_tracker(uid, obj_dict, asset_dict) for uid in self.images],
+            "children": [project.save_json_tracker(uid, obj_dict, asset_dict) for uid in self.children]
+        }
+        if self.source:
+            if self.name in asset_dict:
+                raise ValueError(f"Image named '{self.name}' appears multiple times")
+            asset_dict[self.name] = self.source
+        return result
+
+LATEST_PROJECT_VERSION = 1
+
 @dataclass
 class AnimProject:
     # Dict of atlases based on uid
@@ -126,6 +184,34 @@ class AnimProject:
         obj._uid = new_id
         obj._project = self
         return obj
+
+    def save_json_tracker(self, obj_id: int, obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
+        if obj_id not in obj_dict:
+            obj = self.objects_by_uid.get(obj_id)
+            if not isinstance(obj, UIDJsonSavable):
+                raise ValueError(f"Object not savable")
+            obj_id = obj.get_uid()
+            obj_dict[obj_id] = {} # This is to mark the object is being saved, so duplicates can be prevented
+            obj_dict[obj_id] = obj.save_json(self, obj_dict, asset_dict)
+            stored_id = obj_dict[obj_id].get("_uid")
+            if stored_id != obj_id:
+                raise ValueError(f"Mismatched ID (Expected {obj_id}, but _uid is {stored_id})")
+        return {
+            "_type": "_Reference",
+            "uid_ref": obj_id
+        }
+
+    def save_json(self) -> tuple[Any, dict[str, Any]]:
+        obj_dict: dict[int, Any] = {}
+        asset_dict: dict[str, Any] = {}
+
+        proj = {
+            "_version": LATEST_PROJECT_VERSION,
+            "atlas": self.save_json_tracker(self.atlas.get_uid(), obj_dict, asset_dict),
+            "objects": list(sorted(obj_dict.values(), key=lambda a: a["_uid"]))
+        }
+
+        return proj, asset_dict
 
 # Get a project for testing
 def get_test_project():
