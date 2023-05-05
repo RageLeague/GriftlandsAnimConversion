@@ -3,26 +3,25 @@ from tkinter import ttk, filedialog, messagebox
 from typing import Optional
 import os, traceback
 
-from source.model.anim_project import Atlas, AtlasImage, get_test_project
+from source.model.anim_project import Atlas, AtlasImage, AnimProject
 from source.model.anim_project_io import save_project
 from source.ui.scrollable_canvas import ScrollableCanvas
 from source.ui.node_treeview import NodeTreeView
 from source.ui.constants import *
 
 class AnimEditor(tk.Toplevel):
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, project: Optional[AnimProject], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.title("Anim Editor")
         self.minsize(800, 600)
 
-        self.loaded_project = get_test_project()
+        self.loaded_project = project or AnimProject()
         self.project_path = ""
 
         self.menubar = tk.Menu(self)
         self["menu"] = self.menubar
 
         fileMenu = tk.Menu(self.menubar)
-        fileMenu.add_command(label="Open", command=lambda: None)
         fileMenu.add_command(label="Save", command=self.save_project)
 
         self.menubar.add_cascade(label="File", menu=fileMenu)
@@ -102,6 +101,7 @@ class AnimEditor(tk.Toplevel):
             # print(filename)
             if filename:
                 save_project(filename, self.loaded_project)
+                messagebox.showinfo("Success", "Project successfully saved")
         except Exception as e:
             traceback.print_exception(e)
             messagebox.showerror("Error while writing project", f"{type(e).__name__}: {e}")

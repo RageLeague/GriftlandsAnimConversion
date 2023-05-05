@@ -52,6 +52,7 @@ class ImageEditor(tk.Toplevel):
             # print(filename)
             if filename:
                 write_image(filename, self.loaded_image)
+                messagebox.showinfo("Success", "Image successfully saved")
         except Exception as e:
             traceback.print_exception(e)
             messagebox.showerror("Error while writing file", f"{type(e).__name__}: {e}")

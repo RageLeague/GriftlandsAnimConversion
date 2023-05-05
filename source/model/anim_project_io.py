@@ -18,7 +18,7 @@ def save_project(file: str, project: AnimProject) -> None:
 
 def load_project(file: str) -> AnimProject:
     asset_path = os.path.basename(file) + "_assets"
-    with open(file, "w") as proj_file:
+    with open(file, "r") as proj_file:
         obj = json.load(proj_file)
         project = AnimProject()
 
