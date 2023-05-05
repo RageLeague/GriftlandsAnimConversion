@@ -56,7 +56,6 @@ class ImageEditor(tk.Toplevel):
             traceback.print_exception(e)
             messagebox.showerror("Error while writing file", f"{type(e).__name__}: {e}")
 
-
     def update_image(self, image: Optional[Image.Image], image_name: Optional[str] = None) -> None:
         self.image_name = image_name
         self.loaded_image = image

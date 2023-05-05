@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from PIL import Image
 from typing import Optional, TypeVar, Protocol, Generator, Any, runtime_checkable
-import weakref
+import os, weakref
+
+from source.model.image_format import read_image
 
 @dataclass
 class HasUID:
@@ -26,9 +28,15 @@ class JsonSavable(Protocol):
     def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
         ...
 
+    def load_json(self, project: 'AnimProject', obj: Any, asset_path: str) -> None:
+        ...
+
 @runtime_checkable
 class UIDJsonSavable(Protocol):
     def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
+        ...
+
+    def load_json(self, project: 'AnimProject', obj: Any, asset_path: str) -> None:
         ...
 
     def get_uid(self) -> int:
@@ -40,12 +48,19 @@ U = TypeVar("U", bound=HasUID)
 class IntCoord:
     x: int = 0
     y: int = 0
+
     def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
         return {
             "_type": self.__class__.__name__,
             "x": self.x,
             "y": self.y,
         }
+
+    def load_json(self, project: 'AnimProject', obj: Any, asset_path: str) -> None:
+        if obj is None:
+            return
+        self.x = obj.get("x", 0)
+        self.y = obj.get("y", 0)
 
 @dataclass
 class AtlasImage(HasUID):
@@ -74,12 +89,19 @@ class AtlasImage(HasUID):
         if atlas:
             result["atlas"] = project.save_json_tracker(atlas.get_uid(), obj_dict, asset_dict)
         return result
-
+    def load_json(self, project: 'AnimProject', obj: Any, asset_path: str) -> None:
+        if obj is None:
+            return
+        self.name = obj.get("name", "")
+        self.pos.load_json(project, obj.get("pos"), asset_path)
+        if "atlas" in obj:
+            self.atlas = weakref.ref(project.load_json_ref_object(obj["atlas"], Atlas))
 @dataclass
 class AtlasParent:
     parent: Optional[weakref.ref['Atlas']] = None
     # Position of top left corner of image within the atlas
     pos: IntCoord = field(default_factory=IntCoord)
+
     def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
         parent = self.parent and self.parent()
         result = {
@@ -89,6 +111,13 @@ class AtlasParent:
         if parent:
             result["parent"] = project.save_json_tracker(parent.get_uid(), obj_dict, asset_dict)
         return result
+
+    def load_json(self, project: 'AnimProject', obj: Any, asset_path: str) -> None:
+        if obj is None:
+            return
+        self.pos.load_json(project, obj.get("pos"), asset_path)
+        if "parent" in obj:
+            self.parent = weakref.ref(project.load_json_ref_object(obj["parent"], Atlas))
 
 @dataclass
 class Atlas(HasUID):
@@ -158,6 +187,21 @@ class Atlas(HasUID):
             asset_dict[self.name] = self.source
         return result
 
+    def load_json(self, project: 'AnimProject', obj: Any, asset_path: str) -> None:
+        if obj is None:
+            return
+        self.parent_info.load_json(project, obj.get("parent_info"), asset_path)
+        self.name = obj.get("name", "")
+        self.size.load_json(project, obj.get("size"), asset_path)
+        for image in obj.get("images", []):
+            self.add_image(project.load_json_ref_object(image, AtlasImage))
+        for child in obj.get("children", []):
+            self.add_child(project.load_json_ref_object(child, Atlas))
+        if self.name:
+            image_path = os.path.join(asset_path, self.name)
+            if os.path.isfile(image_path):
+                self.source = read_image(image_path)
+
 LATEST_PROJECT_VERSION = 1
 
 @dataclass
@@ -174,10 +218,12 @@ class AnimProject:
             self._current_uid += 1
         return self._current_uid
 
-    def register_object(self, obj: U) -> U:
+    def register_object(self, obj: U, new_id: Optional[int] = None) -> U:
         if obj._project is not None and obj._project != self:
             raise ValueError(f"Object already belongs to another project")
-        new_id = obj.get_uid() or self.get_new_uid()
+        if new_id != None and obj.get_uid() != new_id:
+            raise ValueError(f"Mismatched ID (new_id={new_id}, but object has uid={obj.get_uid()})")
+        new_id = new_id or obj.get_uid() or self.get_new_uid()
         if new_id in self.objects_by_uid and self.objects_by_uid[new_id] != obj:
             raise ValueError(f"Object with id {new_id} already exist")
         self.objects_by_uid[new_id] = obj
@@ -207,11 +253,40 @@ class AnimProject:
 
         proj = {
             "_version": LATEST_PROJECT_VERSION,
+            "_current_uid": self._current_uid,
             "atlas": self.save_json_tracker(self.atlas.get_uid(), obj_dict, asset_dict),
             "objects": list(sorted(obj_dict.values(), key=lambda a: a["_uid"]))
         }
 
         return proj, asset_dict
+
+    def load_json_ref_object(self, obj: Any, obj_type: type) -> Any:
+        if obj["_type"] != "_Reference":
+            raise ValueError("Object not a reference")
+        ref_obj = self.objects_by_uid[obj["uid_ref"]]
+        if not isinstance(ref_obj, obj_type):
+            raise ValueError(f"Invalid type: Expected {obj_type}, got {ref_obj.__class__}")
+        return ref_obj
+
+    def load_json(self, obj: Any, asset_path: str) -> None:
+        if obj.get("_version", 0) < 1:
+            raise ValueError(f"Bad version number ({obj.get('_version', 0)})")
+        loaded_objects: list[UIDJsonSavable] = []
+        # Create the objects, but don't populate the save data just yet, since references might not be created
+        for one_obj in obj["objects"]:
+            obj_class = globals().get(one_obj["_type"])
+            if not callable(obj_class):
+                raise ValueError(f"Incorrect type: {one_obj['_type']}")
+            created_obj = obj_class()
+            if not isinstance(created_obj, UIDJsonSavable) or not isinstance(created_obj, HasUID):
+                raise ValueError(f"Invalid type")
+            loaded_objects.append(self.register_object(created_obj, created_obj.get_uid()))
+        # Load anim project
+        self._current_uid = obj.get("_current_uid", max(self.objects_by_uid.keys(), default=0))
+        self.atlas = self.load_json_ref_object(obj["atlas"], Atlas)
+        # Do processing of each object created this way
+        for loaded_obj, json_obj in zip(loaded_objects, obj["objects"]):
+            loaded_obj.load_json(self, json_obj, asset_path)
 
 # Get a project for testing
 def get_test_project():
