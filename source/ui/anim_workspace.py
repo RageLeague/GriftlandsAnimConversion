@@ -10,7 +10,7 @@ class AnimWorkspace(tk.Frame):
         self.name_bar = tk.Frame(self)
         self.name_bar.pack(side="top", fill="x", pady=PADDING)
 
-        self.current_name = ttk.Label(self.name_bar, text="Select an item")
+        self.current_name = ttk.Label(self.name_bar)
         self.current_name.pack(side="left", padx=PADDING)
 
         self.edit_name = ttk.Button(self.name_bar, text="Edit", state="disabled")
@@ -30,3 +30,11 @@ class AnimWorkspace(tk.Frame):
         self.work_canvas.canvas.configure(bg="white")
         self.work_canvas.resize_scroll()
         self.work_canvas.pack(side="top", fill="both", expand=True, padx=PADDING, pady=PADDING)
+
+        self.reset_display()
+
+    def set_current_name(self, name: str) -> None:
+        self.current_name.configure(text=name)
+
+    def reset_display(self) -> None:
+        self.set_current_name("Select an item")
