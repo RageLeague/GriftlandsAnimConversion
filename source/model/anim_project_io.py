@@ -2,6 +2,7 @@ from PIL import Image
 import json, os
 
 from source.model.anim_project import AnimProject
+from source.model.ganim_format import Animation
 from source.model.image_format import write_image
 
 def save_project(file: str, project: AnimProject) -> None:

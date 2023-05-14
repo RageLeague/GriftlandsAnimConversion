@@ -1,10 +1,17 @@
 import tkinter as tk
-from typing import Optional
+from tkinter import _Cursor, _Relief, _ScreenUnits, _TakeFocusValue, Misc
+from typing import Any, Optional
+from typing_extensions import Literal
 from PIL import ImageTk
 
 from source.model.anim_project import Atlas, AtlasImage, IntCoord
 from source.ui.anim_workspace import AnimWorkspace
 from source.ui.workspace_controller import WorkspaceController
+
+class AtlasConfigs(tk.Frame):
+    def __init__(self, atlas: Atlas, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.atlas = atlas
 
 class AtlasWorkspace(WorkspaceController):
     def __init__(self, root: Optional[Atlas] = None, focus: Atlas | AtlasImage | None = None) -> None:
@@ -28,6 +35,15 @@ class AtlasWorkspace(WorkspaceController):
             self.loaded_images: list[ImageTk.PhotoImage] = []
             if self.root:
                 self.render_atlas(workspace.work_canvas.canvas, self.loaded_images, self.root, IntCoord())
+
+        workspace.reset_config_panel()
+
+        self.mark_dirty(False)
+
+        if isinstance(self.focus, Atlas):
+            pass # Render the config panel for an atlas
+        elif isinstance(self.focus, AtlasImage):
+            pass # Render the config panel for an atlas image
 
     def set_root(self, root: Optional[Atlas]):
         self.root = root
