@@ -34,10 +34,6 @@ class AnimWorkspace(tk.Frame):
 
         self.reset_display()
 
-    @property
-    def canvas(self) -> tk.Canvas:
-        return self.work_canvas.canvas
-
     def set_current_name(self, name: str, default_name: Optional[str] = None) -> None:
         self.current_name.configure(text=name)
         if default_name is None:
@@ -65,7 +61,7 @@ class AnimWorkspace(tk.Frame):
         self.set_edit_name_fn(None)
 
     def reset_canvas(self) -> None:
-        self.canvas.delete("all")
+        self.work_canvas.canvas.delete("all")
 
     def reset_config_panel(self) -> None:
         for child in self.config_panel.winfo_children():
