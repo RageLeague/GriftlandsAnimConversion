@@ -53,6 +53,12 @@ class IntCoord:
     x: int = 0
     y: int = 0
 
+    def __add__(self, other: 'IntCoord') -> 'IntCoord':
+        return IntCoord(self.x + other.x, self.y + other.y)
+
+    def to_tuple(self) -> tuple[int, int]:
+        return (self.x, self.y)
+
     def save_json(self, project: 'AnimProject', obj_dict: dict[int, Any], asset_dict: dict[str, Any]) -> Any:
         return {
             "_type": self.__class__.__name__,

@@ -12,6 +12,9 @@ class Coord:
     x: float = 0.0
     y: float = 0.0
 
+    def __add__(self, other: 'Coord') -> 'Coord':
+        return Coord(self.x + other.x, self.y + other.y)
+
 @dataclass
 class BBox:
     pos: Coord = field(default_factory=Coord)
