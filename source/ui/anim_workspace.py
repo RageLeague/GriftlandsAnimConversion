@@ -34,8 +34,15 @@ class AnimWorkspace(tk.Frame):
 
         self.reset_display()
 
-    def set_current_name(self, name: str) -> None:
+    @property
+    def canvas(self) -> tk.Canvas:
+        return self.work_canvas.canvas
+
+    def set_current_name(self, name: str, default_name: Optional[str] = None) -> None:
         self.current_name.configure(text=name)
+        if default_name is None:
+            default_name = name
+        self.default_name = default_name
 
     def set_class_name(self, name: str) -> None:
         self.class_name.configure(text=name)
@@ -48,7 +55,7 @@ class AnimWorkspace(tk.Frame):
             self.edit_name.configure(state="disabled")
 
     def __ask_edit_name(self) -> None:
-        res = simpledialog.askstring("Rename", "Please enter a new name for this object...", initialvalue=self.current_name.cget("text"))
+        res = simpledialog.askstring("Rename", "Please enter a new name for this object...", initialvalue=self.default_name)
         if res is not None and self.edit_fn:
             self.edit_fn(res)
 
@@ -56,3 +63,4 @@ class AnimWorkspace(tk.Frame):
         self.set_current_name("Select an item")
         self.set_class_name("")
         self.set_edit_name_fn(lambda s: print(s))
+        self.canvas.delete("all")
