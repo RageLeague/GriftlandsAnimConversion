@@ -223,6 +223,9 @@ class AnimProject:
     _current_uid: int = 0
     _dirty: bool = False
 
+    @property
+    def dirty(self): return self._dirty
+
     def mark_dirty(self, dirty: Optional[bool] = None) -> None:
         if dirty is None:
             dirty = True

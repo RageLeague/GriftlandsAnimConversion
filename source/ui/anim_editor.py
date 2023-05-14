@@ -94,6 +94,11 @@ class AnimEditor(tk.Toplevel):
             self.__on_atlas_entry_select(int(iid))
 
     def refresh_screen(self) -> None:
+        if self.loaded_project.dirty:
+            self.title("Anim Project (Modified)")
+        else:
+            self.title("Anim Project")
+
         self.atlas_tree.update_listing()
         if self.workspace_controller:
             self.workspace_controller.update_workspace(self.workspace, self)

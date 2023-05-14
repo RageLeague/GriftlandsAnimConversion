@@ -15,22 +15,26 @@ class AtlasConfigs(ttk.Frame):
         self.atlas = atlas
         self.workspace = workspace
         ttk.Label(self, text="Pos:").grid(row=0, column=0)
-        self.pos_x = tk.Text(self, height=1, width=10)
+        self.pos_x = tk.Text(self, height=1, width=8)
         self.pos_x.insert(tk.END, str(atlas.parent_info.pos.x))
         self.pos_x.grid(row=0, column=1)
 
-        self.pos_y = tk.Text(self, height=1, width=10)
+        self.pos_y = tk.Text(self, height=1, width=8)
         self.pos_y.insert(tk.END, str(atlas.parent_info.pos.y))
         self.pos_y.grid(row=0, column=2)
 
+        ttk.Button(self, text="Highlight").grid(row=0, column=3)
+
         ttk.Label(self, text="Size:").grid(row=1, column=0)
-        self.size_x = tk.Text(self, height=1, width=10)
+        self.size_x = tk.Text(self, height=1, width=8)
         self.size_x.insert(tk.END, str(atlas.size.x))
         self.size_x.grid(row=1, column=1)
 
-        self.size_y = tk.Text(self, height=1, width=10)
+        self.size_y = tk.Text(self, height=1, width=8)
         self.size_y.insert(tk.END, str(atlas.size.y))
         self.size_y.grid(row=1, column=2)
+
+        ttk.Button(self, text="Auto size").grid(row=1, column=3)
 
         for widget in self.winfo_children():
             widget.grid(padx=PADDING, pady=PADDING)
