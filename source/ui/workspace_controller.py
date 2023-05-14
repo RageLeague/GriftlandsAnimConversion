@@ -16,6 +16,10 @@ class WorkspaceController(abc.ABC):
         if dirty is None:
             dirty = True
         self._dirty = dirty
+        self.on_dirty_changed()
+
+    def on_dirty_changed(self) -> None:
+        pass
 
     @abc.abstractmethod
     def update_workspace(self, workspace: AnimWorkspace, editor: 'editor.AnimEditor') -> None:
