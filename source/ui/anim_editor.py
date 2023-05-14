@@ -83,7 +83,9 @@ class AnimEditor(tk.Toplevel):
         item = self.loaded_project.objects_by_uid.get(selected_item)
         if isinstance(item, Atlas):
             item.add_image(AtlasImage())
-            self.atlas_tree.update_listing()
+
+            self.refresh_screen()
+
             self.atlas_tree.focus(str(item.get_uid()))
             self.atlas_tree.item(str(item.get_uid()), open=False)
 
@@ -92,6 +94,9 @@ class AnimEditor(tk.Toplevel):
         iid: str = e.identify("item",event.x,event.y)
         if iid.isdigit():
             self.__on_atlas_entry_select(int(iid))
+
+    def refresh_screen(self) -> None:
+        self.atlas_tree.update_listing()
 
     def save_project(self) -> None:
         if self.loaded_project is None:
