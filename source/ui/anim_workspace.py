@@ -59,8 +59,19 @@ class AnimWorkspace(tk.Frame):
         if res is not None and self.edit_fn:
             self.edit_fn(res)
 
-    def reset_display(self) -> None:
+    def reset_names(self) -> None:
         self.set_current_name("Select an item")
         self.set_class_name("")
-        self.set_edit_name_fn(lambda s: print(s))
+        self.set_edit_name_fn(None)
+
+    def reset_canvas(self) -> None:
         self.canvas.delete("all")
+
+    def reset_config_panel(self) -> None:
+        for child in self.config_panel.winfo_children():
+            child.destroy()
+
+    def reset_display(self) -> None:
+        self.reset_names()
+        self.reset_canvas()
+        self.reset_config_panel()
