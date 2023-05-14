@@ -17,6 +17,7 @@ class NodeTreeView(Treeview):
         if self.exists(str(uid)):
             new_tracked.add(uid)
             old_tracked.remove(uid)
+            self.item(str(uid), text=node.get_node_name())
         else:
             new_tracked.add(uid)
             self.insert('', 'end', text=node.get_node_name(), iid=str(uid))

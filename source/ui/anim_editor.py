@@ -7,6 +7,8 @@ from source.model.anim_project import Atlas, AtlasImage, AnimProject
 from source.model.anim_project_io import save_project
 from source.ui.anim_workspace import AnimWorkspace
 from source.ui.node_treeview import NodeTreeView
+from source.ui.atlas_workspace import AtlasWorkspace
+from source.ui.workspace_controller import WorkspaceController
 from source.ui.constants import *
 
 class AnimEditor(tk.Toplevel):
@@ -38,6 +40,8 @@ class AnimEditor(tk.Toplevel):
 
         self.workspace = AnimWorkspace(self)
         self.workspace.pack(side="left", fill='both', expand=True)
+
+        self.workspace_controller: Optional[WorkspaceController] = None
 
     def __create_atlas_tab(self) -> None:
         # create frames
@@ -71,11 +75,15 @@ class AnimEditor(tk.Toplevel):
     def __on_atlas_entry_select(self, selected_item: int) -> None:
         print(f"Selected entry: {selected_item}")
         item = self.loaded_project.objects_by_uid.get(selected_item)
-        if isinstance(item, Atlas):
-            item.add_image(AtlasImage())
+        if not isinstance(self.workspace_controller, AtlasWorkspace):
+            self.workspace_controller = AtlasWorkspace()
+        if isinstance(item, (Atlas, AtlasImage)):
+            self.workspace_controller.set_focus(item)
+        self.workspace_controller.set_root(self.loaded_project.atlas)
 
-            self.refresh_screen()
+        self.refresh_screen()
 
+        if isinstance(item, (Atlas, AtlasImage)):
             self.atlas_tree.focus(str(item.get_uid()))
             self.atlas_tree.item(str(item.get_uid()), open=False)
 
@@ -87,6 +95,10 @@ class AnimEditor(tk.Toplevel):
 
     def refresh_screen(self) -> None:
         self.atlas_tree.update_listing()
+        if self.workspace_controller:
+            self.workspace_controller.update_workspace(self.workspace, self)
+        else:
+            self.workspace.reset_display()
 
     def save_project(self) -> None:
         if self.loaded_project is None:

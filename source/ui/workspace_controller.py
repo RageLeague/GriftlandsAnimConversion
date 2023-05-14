@@ -3,6 +3,7 @@ from typing import Optional
 import abc
 
 from source.ui.anim_workspace import AnimWorkspace
+import source.ui.anim_editor as editor
 
 class WorkspaceController(abc.ABC):
     def __init__(self) -> None:
@@ -17,5 +18,5 @@ class WorkspaceController(abc.ABC):
         self._dirty = dirty
 
     @abc.abstractmethod
-    def update_workspace(self, workspace: AnimWorkspace) -> None:
+    def update_workspace(self, workspace: AnimWorkspace, editor: 'editor.AnimEditor') -> None:
         ...
