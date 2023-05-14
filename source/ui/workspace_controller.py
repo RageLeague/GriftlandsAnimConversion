@@ -4,5 +4,5 @@ from source.ui.anim_workspace import AnimWorkspace
 
 class WorkspaceController(abc.ABC):
     @abc.abstractmethod
-    def update_workspace(self, workspace: AnimWorkspace):
+    def update_workspace(self, workspace: AnimWorkspace) -> None:
         ...

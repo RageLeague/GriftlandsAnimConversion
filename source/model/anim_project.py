@@ -10,6 +10,10 @@ class HasUID:
     _uid: int = 0
     _project: Optional['AnimProject'] = None
 
+    @property
+    def project(self):
+        return self._project
+
     def get_uid(self) -> int:
         return self._uid
 
@@ -211,6 +215,13 @@ class AnimProject:
     objects_by_uid: weakref.WeakValueDictionary[int, HasUID] = field(default_factory=weakref.WeakValueDictionary)
 
     _current_uid: int = 0
+    _dirty: bool = False
+
+    def mark_dirty(self, dirty: Optional[bool] = None) -> None:
+        if dirty is None:
+            dirty = True
+        self._dirty = dirty
+
     def get_new_uid(self) -> int:
         self._current_uid += 1
         # Make sure it's not a dupe
