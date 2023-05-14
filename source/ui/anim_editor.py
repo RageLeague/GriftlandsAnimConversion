@@ -5,7 +5,7 @@ import os, traceback
 
 from source.model.anim_project import Atlas, AtlasImage, AnimProject
 from source.model.anim_project_io import save_project
-from source.ui.scrollable_canvas import ScrollableCanvas
+from source.ui.anim_workspace import AnimWorkspace
 from source.ui.node_treeview import NodeTreeView
 from source.ui.constants import *
 
@@ -36,18 +36,8 @@ class AnimEditor(tk.Toplevel):
 
         ttk.Separator(self, orient="vertical").pack(side="left", fill="y", pady=PADDING)
 
-        self.workspace = tk.Frame(self)
+        self.workspace = AnimWorkspace(self)
         self.workspace.pack(side="left", fill='both', expand=True)
-
-        self.config_panel = tk.Frame(self.workspace, height=200)
-        self.config_panel.pack(side="bottom", fill="x", padx=PADDING, pady=PADDING)
-
-        ttk.Separator(self.workspace, orient="horizontal").pack(side="bottom", fill="x", padx=PADDING)
-
-        self.work_canvas = ScrollableCanvas(self.workspace)
-        self.work_canvas.canvas.configure(bg="white")
-        self.work_canvas.resize_scroll()
-        self.work_canvas.pack(side="top", fill="both", expand=True, padx=PADDING, pady=PADDING)
 
     def __create_atlas_tab(self) -> None:
         # create frames
