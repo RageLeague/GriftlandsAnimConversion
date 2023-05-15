@@ -40,8 +40,9 @@ class AtlasConfigs(ttk.Frame):
 
         ttk.Button(self, text="Reassign").grid(row=2, column=1) # TODO: Implement this
         ttk.Button(self, text="Import").grid(row=2, column=2) # TODO: Implement this
-        ttk.Button(self, text="New Child").grid(row=2, column=3) # TODO: Implement this
-        ttk.Button(self, text="Delete").grid(row=2, column=4) # TODO: Implement this
+        ttk.Button(self, text="+Atlas").grid(row=2, column=3) # TODO: Implement this
+        ttk.Button(self, text="+Selection").grid(row=2, column=4) # TODO: Implement this
+        ttk.Button(self, text="Delete").grid(row=2, column=5) # TODO: Implement this
 
         self.save_button = ttk.Button(self, text="Save", command=self.save_values)
         self.save_button.grid(row=0, column=5)
