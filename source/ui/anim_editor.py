@@ -115,7 +115,10 @@ class AnimEditor(tk.Toplevel):
             # print(filename)
             if filename:
                 save_project(filename, self.loaded_project)
+                self.loaded_project.mark_dirty(False)
                 messagebox.showinfo("Success", "Project successfully saved")
         except Exception as e:
             traceback.print_exception(e)
             messagebox.showerror("Error while writing project", f"{type(e).__name__}: {e}")
+        finally:
+            self.refresh_screen()
