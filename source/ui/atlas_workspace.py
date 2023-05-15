@@ -9,25 +9,30 @@ from source.ui.workspace_controller import WorkspaceController
 from source.ui.constants import *
 import source.ui.anim_editor as editor
 
+def set_text(entry: ttk.Entry, s: str) -> None:
+    entry.delete(0, tk.END)
+    entry.insert(tk.END, s)
+
 class AtlasConfigs(ttk.Frame):
     def __init__(self, atlas: Atlas, workspace: 'AtlasWorkspace', *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.atlas = atlas
         self.workspace = workspace
+
         ttk.Label(self, text="Pos:").grid(row=0, column=0)
-        self.pos_x = tk.Text(self, height=1, width=8)
+        self.pos_x = ttk.Entry(self, width=INPUT_FIELD_WIDTH, validate="key", validatecommand=self.__field_edited)
         self.pos_x.grid(row=0, column=1)
 
-        self.pos_y = tk.Text(self, height=1, width=8)
+        self.pos_y = ttk.Entry(self, width=INPUT_FIELD_WIDTH, validate="key", validatecommand=self.__field_edited)
         self.pos_y.grid(row=0, column=2)
 
         ttk.Button(self, text="Highlight").grid(row=0, column=3)
 
         ttk.Label(self, text="Size:").grid(row=1, column=0)
-        self.size_x = tk.Text(self, height=1, width=8)
+        self.size_x = ttk.Entry(self, width=INPUT_FIELD_WIDTH, validate="key", validatecommand=self.__field_edited)
         self.size_x.grid(row=1, column=1)
 
-        self.size_y = tk.Text(self, height=1, width=8)
+        self.size_y = ttk.Entry(self, width=INPUT_FIELD_WIDTH, validate="key", validatecommand=self.__field_edited)
         self.size_y.grid(row=1, column=2)
 
         ttk.Button(self, text="Auto size").grid(row=1, column=3)
@@ -37,26 +42,46 @@ class AtlasConfigs(ttk.Frame):
         ttk.Button(self, text="New Child").grid(row=2, column=3)
         ttk.Button(self, text="Delete").grid(row=2, column=4)
 
-        self.save_button = ttk.Button(self, text="Save")
+        self.save_button = ttk.Button(self, text="Save", command=self.save_values)
         self.save_button.grid(row=0, column=5)
 
-        self.discard_button = ttk.Button(self, text="Discard")
+        self.discard_button = ttk.Button(self, text="Discard", command=self.set_values)
         self.discard_button.grid(row=1, column=5)
-
-        self.set_values()
 
         for widget in self.winfo_children():
             widget.grid(padx=PADDING, pady=PADDING)
 
+        self.set_values()
+
+    def __field_edited(self) -> bool:
+        self.workspace.mark_dirty()
+        return True
+
+    def save_values(self) -> None:
+        try:
+            self.atlas.parent_info.pos.x = int(self.pos_x.get())
+        except ValueError:
+            pass
+        try:
+            self.atlas.parent_info.pos.y = int(self.pos_y.get())
+        except ValueError:
+            pass
+        try:
+            self.atlas.size.x = int(self.size_x.get())
+        except ValueError:
+            pass
+        try:
+            self.atlas.size.y = int(self.size_y.get())
+        except ValueError:
+            pass
+
+        self.set_values()
+
     def set_values(self) -> None:
-        self.pos_x.delete("1.0", tk.END)
-        self.pos_x.insert(tk.END, str(self.atlas.parent_info.pos.x))
-        self.pos_y.delete("1.0", tk.END)
-        self.pos_y.insert(tk.END, str(self.atlas.parent_info.pos.y))
-        self.size_x.delete("1.0", tk.END)
-        self.size_x.insert(tk.END, str(self.atlas.size.x))
-        self.size_y.delete("1.0", tk.END)
-        self.size_y.insert(tk.END, str(self.atlas.size.y))
+        set_text(self.pos_x, str(self.atlas.parent_info.pos.x))
+        set_text(self.pos_y, str(self.atlas.parent_info.pos.y))
+        set_text(self.size_x, str(self.atlas.size.x))
+        set_text(self.size_y, str(self.atlas.size.y))
 
         self.workspace.mark_dirty(False)
 
@@ -88,6 +113,7 @@ class AtlasWorkspace(WorkspaceController):
             if self.root:
                 self.render_atlas(workspace.work_canvas.canvas, self.loaded_images, self.root, IntCoord())
 
+        self.config_panel = None
         workspace.reset_config_panel()
 
         if isinstance(self.focus, Atlas):
@@ -97,9 +123,12 @@ class AtlasWorkspace(WorkspaceController):
             workspace.set_edit_name_fn(lambda s: self.rename_focus(editor, s))
             self.config_panel.grid()
         elif isinstance(self.focus, AtlasImage):
+            self.config_panel = None
             workspace.set_current_name(self.focus.name)
             workspace.set_class_name("Image")
             workspace.set_edit_name_fn(lambda s: self.rename_focus(editor, s))
+        else:
+            self.config_panel = None
 
         self.mark_dirty(False)
 
