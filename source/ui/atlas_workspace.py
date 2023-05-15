@@ -117,6 +117,7 @@ class AtlasWorkspace(WorkspaceController):
             self.loaded_images: list[ImageTk.PhotoImage] = []
             if self.root:
                 self.render_atlas(workspace.work_canvas.canvas, self.loaded_images, self.root, IntCoord())
+            workspace.work_canvas.resize_scroll()
 
         self.config_panel = None
         workspace.reset_config_panel()

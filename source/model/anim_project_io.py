@@ -9,7 +9,7 @@ def save_project(file: str, project: AnimProject) -> None:
     proj_json, asset_dict = project.save_json()
     with open(file, "w") as proj_file:
         json.dump(proj_json, proj_file)
-    asset_path = os.path.basename(file) + "_assets"
+    asset_path = os.path.splitext(file)[0] + "_assets"
     if not os.path.exists(asset_path):
         os.makedirs(asset_path)
     for path in asset_dict:
@@ -18,7 +18,7 @@ def save_project(file: str, project: AnimProject) -> None:
             write_image(os.path.join(asset_path, path), obj)
 
 def load_project(file: str) -> AnimProject:
-    asset_path = os.path.basename(file) + "_assets"
+    asset_path = os.path.splitext(file)[0] + "_assets"
     with open(file, "r") as proj_file:
         obj = json.load(proj_file)
         project = AnimProject()

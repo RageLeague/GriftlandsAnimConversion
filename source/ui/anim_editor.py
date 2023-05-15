@@ -110,6 +110,8 @@ class AnimEditor(tk.Toplevel):
             return
         try:
             filename = filedialog.asksaveasfilename(filetypes=[("Project File", ".json")], initialfile=self.project_path and os.path.basename(self.project_path))
+            if not filename.endswith(".json"):
+                filename += ".json"
             # print(filename)
             if filename:
                 save_project(filename, self.loaded_project)
