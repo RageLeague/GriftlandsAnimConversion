@@ -26,7 +26,7 @@ class AtlasConfigs(ttk.Frame):
         self.pos_y = ttk.Entry(self, width=INPUT_FIELD_WIDTH, validate="key", validatecommand=self.__field_edited)
         self.pos_y.grid(row=0, column=2)
 
-        ttk.Button(self, text="Highlight").grid(row=0, column=3)
+        ttk.Button(self, text="Highlight").grid(row=0, column=3) # TODO: Implement this
 
         ttk.Label(self, text="Size:").grid(row=1, column=0)
         self.size_x = ttk.Entry(self, width=INPUT_FIELD_WIDTH, validate="key", validatecommand=self.__field_edited)
@@ -35,12 +35,12 @@ class AtlasConfigs(ttk.Frame):
         self.size_y = ttk.Entry(self, width=INPUT_FIELD_WIDTH, validate="key", validatecommand=self.__field_edited)
         self.size_y.grid(row=1, column=2)
 
-        ttk.Button(self, text="Auto size").grid(row=1, column=3)
+        ttk.Button(self, text="Auto size").grid(row=1, column=3) # TODO: Implement this
 
-        ttk.Button(self, text="Reassign").grid(row=2, column=1)
-        ttk.Button(self, text="Import").grid(row=2, column=2)
-        ttk.Button(self, text="New Child").grid(row=2, column=3)
-        ttk.Button(self, text="Delete").grid(row=2, column=4)
+        ttk.Button(self, text="Reassign").grid(row=2, column=1) # TODO: Implement this
+        ttk.Button(self, text="Import").grid(row=2, column=2) # TODO: Implement this
+        ttk.Button(self, text="New Child").grid(row=2, column=3) # TODO: Implement this
+        ttk.Button(self, text="Delete").grid(row=2, column=4) # TODO: Implement this
 
         self.save_button = ttk.Button(self, text="Save", command=self.save_values)
         self.save_button.grid(row=0, column=5)
