@@ -78,6 +78,7 @@ class AtlasImage(HasUID):
     atlas: Optional[weakref.ref['Atlas']] = None
     # Position of top left corner of image within the atlas
     pos: IntCoord = field(default_factory=IntCoord)
+    size: IntCoord = field(default_factory=IntCoord)
     # Optional name for the image to better identify it
     name: str = ""
 
@@ -95,6 +96,7 @@ class AtlasImage(HasUID):
             "_type": self.__class__.__name__,
             "name": self.name,
             "pos": self.pos.save_json(project, obj_dict, asset_dict),
+            "size": self.size.save_json(project, obj_dict, asset_dict),
         }
         if atlas:
             result["atlas"] = project.save_json_tracker(atlas.get_uid(), obj_dict, asset_dict)
@@ -104,6 +106,7 @@ class AtlasImage(HasUID):
             return
         self.name = obj.get("name", "")
         self.pos.load_json(project, obj.get("pos"), asset_path)
+        self.size.load_json(project, obj.get("size"), asset_path)
         if "atlas" in obj:
             self.atlas = weakref.ref(project.load_json_ref_object(obj["atlas"], Atlas))
 @dataclass
