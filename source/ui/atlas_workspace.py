@@ -14,10 +14,11 @@ def set_text(entry: ttk.Entry, s: str) -> None:
     entry.insert(tk.END, s)
 
 class AtlasConfigs(ttk.Frame):
-    def __init__(self, atlas: Atlas, workspace: 'AtlasWorkspace', *args, **kwargs) -> None:
+    def __init__(self, atlas: Atlas, workspace: 'AtlasWorkspace', editor: 'editor.AnimEditor', *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.atlas = atlas
         self.workspace = workspace
+        self.editor = editor
 
         ttk.Label(self, text="Pos:").grid(row=0, column=0)
         self.pos_x = ttk.Entry(self, width=INPUT_FIELD_WIDTH, validate="key", validatecommand=self.__field_edited)
@@ -75,7 +76,11 @@ class AtlasConfigs(ttk.Frame):
         except ValueError:
             pass
 
+        if self.atlas.project:
+            self.atlas.project.mark_dirty()
         self.set_values()
+
+        self.editor.refresh_screen()
 
     def set_values(self) -> None:
         set_text(self.pos_x, str(self.atlas.parent_info.pos.x))
@@ -117,7 +122,7 @@ class AtlasWorkspace(WorkspaceController):
         workspace.reset_config_panel()
 
         if isinstance(self.focus, Atlas):
-            self.config_panel = AtlasConfigs(self.focus, self, workspace.config_panel, padding=PADDING)
+            self.config_panel = AtlasConfigs(self.focus, self, editor, workspace.config_panel, padding=PADDING)
             workspace.set_current_name(self.focus.name)
             workspace.set_class_name("Atlas")
             workspace.set_edit_name_fn(lambda s: self.rename_focus(editor, s))

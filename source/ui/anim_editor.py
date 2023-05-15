@@ -95,9 +95,9 @@ class AnimEditor(tk.Toplevel):
 
     def refresh_screen(self) -> None:
         if self.loaded_project.dirty:
-            self.title("Anim Project (Modified)")
+            self.title("Anim Editor (Modified)")
         else:
-            self.title("Anim Project")
+            self.title("Anim Editor")
 
         self.atlas_tree.update_listing()
         if self.workspace_controller:
